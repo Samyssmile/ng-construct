@@ -1,0 +1,15 @@
+{
+  "name": "@neuravision/ng-construct",
+  "version": "0.1.0",
+  "description": "Angular components for the Construct Design System",
+  "keywords": ["angular", "components", "design-system", "construct"],
+  "peerDependencies": {
+    "@angular/common": "^21.1.0",
+    "@angular/core": "^21.1.0",
+    "@neuravision/construct": "^0.1.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

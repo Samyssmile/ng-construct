@@ -1,0 +1,71 @@
+:host {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-body {
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6, 1.5rem) var(--space-8, 2rem);
+}
+
+/* Toolbar brand */
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  text-decoration: none;
+  color: inherit;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.app-brand__name {
+  white-space: nowrap;
+}
+
+/* Toolbar actions */
+.app-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.app-notification-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-notification-wrapper af-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  pointer-events: none;
+}
+
+/* Sidebar header */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-2, 0.5rem) 0;
+}
+
+/* Nav items */
+.ct-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.ct-nav-item af-badge {
+  margin-left: auto;
+}

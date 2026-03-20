@@ -1,0 +1,62 @@
+<div class="ct-data-table ct-data-table--simple">
+  <div class="ct-data-table__table">
+    <table [class]="tableClasses()">
+      <thead>
+        <tr>
+          @if (isSelectable()) {
+            <th scope="col" class="ct-table__cell--checkbox">
+              <label class="ct-check">
+                <input
+                  class="ct-check__input"
+                  type="checkbox"
+                  [checked]="allSelected"
+                  [indeterminate]="someSelected"
+                  (change)="toggleAll($any($event.target).checked)"
+                  aria-label="Select all rows" />
+              </label>
+            </th>
+          }
+          @for (col of columns(); track col.key) {
+            <th scope="col" [attr.aria-sort]="getAriaSort(col)">
+              @if (col.sortable) {
+                <button class="ct-table__sort" type="button" (click)="toggleSort(col)">
+                  {{ col.header }}
+                  <span class="ct-table__sort-indicator" aria-hidden="true"></span>
+                </button>
+              } @else {
+                {{ col.header }}
+              }
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of sortedData(); track row) {
+          <tr (click)="onRowClick(row)">
+            @if (isSelectable()) {
+              <td class="ct-table__cell--checkbox">
+                <label class="ct-check">
+                  <input
+                    class="ct-check__input"
+                    type="checkbox"
+                    [checked]="isSelected(row)"
+                    (change)="toggleSelection(row, $event)"
+                    aria-label="Select row" />
+                </label>
+              </td>
+            }
+            @for (col of columns(); track col.key) {
+              <td [class]="col.cellClass || ''">
+                @if (getCellTemplate(col.key); as tmpl) {
+                  <ng-container *ngTemplateOutlet="tmpl; context: { $implicit: row, column: col }"></ng-container>
+                } @else {
+                  {{ row[col.key] }}
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

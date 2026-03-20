@@ -1,0 +1,79 @@
+<div class="tasks-header">
+  <h2 class="view-title">Tasks</h2>
+  <af-button variant="primary" size="sm" (clicked)="createTask.emit()">
+    <af-icon name="add" size="sm" />
+    New Task
+  </af-button>
+</div>
+
+<!-- Filters -->
+<div class="tasks-filters">
+  <af-toggle-group
+    [items]="filterItems"
+    [(value)]="filter"
+    size="sm"
+    ariaLabel="Task filter"
+    (valueChange)="onFilterChange()" />
+
+  <af-input
+    type="search"
+    placeholder="Search tasks..."
+    iconPosition="left"
+    size="sm"
+    [ngModel]="searchQuery()"
+    (ngModelChange)="onSearchChange($event)">
+    <af-icon icon name="search" size="sm" />
+  </af-input>
+</div>
+
+<!-- Loading spinner -->
+@if (loading()) {
+  <div class="tasks-loading">
+    <af-spinner size="md" label="Loading tasks" />
+  </div>
+}
+
+<!-- Task Table -->
+@if (!loading()) {
+  <af-data-table
+    [data]="pagedTasks()"
+    [columns]="columns"
+    [config]="{ striped: true, compact: true, selectable: true }"
+    [sort]="sort()"
+    rowId="id"
+    (sortChange)="onSortChange($event)">
+
+    <ng-template afCellDef="status" let-row>
+      <af-badge [variant]="getStatusVariant(row.status)">
+        {{ row.status | afFormatLabel }}
+      </af-badge>
+    </ng-template>
+
+    <ng-template afCellDef="priority" let-row>
+      <af-badge [variant]="getPriorityVariant(row.priority)">
+        {{ row.priority | afFormatLabel }}
+      </af-badge>
+    </ng-template>
+
+    <ng-template afCellDef="type" let-row>
+      <span class="type-cell">
+        <af-icon [name]="getTypeIcon(row.type)" size="sm" />
+        {{ row.type | afFormatLabel }}
+      </span>
+    </ng-template>
+
+    <ng-template afCellDef="actions" let-row>
+      <af-dropdown
+        label="Actions"
+        [items]="rowActions"
+        (itemSelected)="onRowAction($event, row)" />
+    </ng-template>
+  </af-data-table>
+
+  <div class="pagination-wrapper">
+    <af-pagination
+      [currentPage]="currentPage()"
+      [totalPages]="totalPages()"
+      (pageChange)="onPageChange($event)" />
+  </div>
+}

@@ -1,0 +1,125 @@
+<!-- Global Toast Container -->
+<af-toast-container></af-toast-container>
+
+<!-- Toolbar -->
+<af-toolbar ariaLabel="Construct PM navigation">
+  <a brand class="app-brand" (click)="navigateTo('dashboard'); $event.preventDefault()" href="#">
+    <af-icon name="construction" size="lg" />
+    <span class="app-brand__name">Construct PM</span>
+  </a>
+
+  <ul nav class="ct-toolbar__nav">
+    <li>
+      <a href="#"
+        class="ct-toolbar__nav-link"
+        [class.ct-toolbar__nav-link--active]="currentView() === 'dashboard'"
+        [attr.aria-current]="currentView() === 'dashboard' ? 'page' : null"
+        (click)="navigateTo('dashboard'); $event.preventDefault()">
+        Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="#"
+        class="ct-toolbar__nav-link"
+        [class.ct-toolbar__nav-link--active]="currentView() === 'tasks'"
+        [attr.aria-current]="currentView() === 'tasks' ? 'page' : null"
+        (click)="navigateTo('tasks'); $event.preventDefault()">
+        Tasks
+      </a>
+    </li>
+    <li>
+      <a href="#"
+        class="ct-toolbar__nav-link"
+        [class.ct-toolbar__nav-link--active]="currentView() === 'settings'"
+        [attr.aria-current]="currentView() === 'settings' ? 'page' : null"
+        (click)="navigateTo('settings'); $event.preventDefault()">
+        Settings
+      </a>
+    </li>
+  </ul>
+
+  <div actions class="app-toolbar-actions">
+    <af-button variant="primary" size="sm" (clicked)="openCreateTaskModal()">
+      <af-icon name="add" size="sm" />
+      New Task
+    </af-button>
+
+    <span class="app-notification-wrapper" afTooltip="Notifications" afTooltipPosition="bottom">
+      <af-button variant="ghost" [iconOnly]="true" ariaLabel="Notifications">
+        <af-icon name="notifications" />
+      </af-button>
+      @if (notificationCount() > 0) {
+        <af-badge variant="danger" [dot]="true">{{ notificationCount() }}</af-badge>
+      }
+    </span>
+
+    <af-button
+      variant="ghost"
+      [iconOnly]="true"
+      ariaLabel="Settings"
+      afTooltip="Settings"
+      afTooltipPosition="bottom"
+      (clicked)="navigateTo('settings')">
+      <af-icon name="settings" />
+    </af-button>
+  </div>
+</af-toolbar>
+
+<!-- Body: Sidebar + Main Content -->
+<div class="app-body">
+  <af-sidebar [(open)]="sidebarOpen" mode="side" ariaLabel="Project navigation">
+    <div header class="sidebar-header">
+      <af-icon name="folder" size="sm" />
+      <strong>Projects</strong>
+    </div>
+
+    <ul content class="ct-nav-list">
+      <li>
+        <a class="ct-nav-item"
+          [class.ct-nav-item--active]="selectedProjectId() === null && currentView() === 'tasks'"
+          href="#"
+          [attr.aria-current]="selectedProjectId() === null && currentView() === 'tasks' ? 'page' : null"
+          (click)="selectProject(null); $event.preventDefault()">
+          <af-icon name="list" size="sm" />
+          <span class="ct-nav-item__label">All Tasks</span>
+        </a>
+      </li>
+      @for (project of projects(); track project.id) {
+        <li>
+          <a class="ct-nav-item"
+            [class.ct-nav-item--active]="selectedProjectId() === project.id"
+            href="#"
+            [attr.aria-current]="selectedProjectId() === project.id ? 'page' : null"
+            (click)="selectProject(project.id); $event.preventDefault()">
+            <af-icon [name]="project.icon" size="sm" />
+            <span class="ct-nav-item__label">{{ project.name }}</span>
+            <af-badge variant="info">{{ project.taskCount }}</af-badge>
+          </a>
+        </li>
+      }
+    </ul>
+  </af-sidebar>
+
+  <main class="app-main">
+    <af-breadcrumbs [items]="breadcrumbs()"></af-breadcrumbs>
+
+    @switch (currentView()) {
+      @case ('dashboard') {
+        <app-dashboard (navigateToTasks)="navigateTo('tasks')" />
+      }
+      @case ('tasks') {
+        <app-tasks
+          [projectId]="selectedProjectId()"
+          (createTask)="openCreateTaskModal()" />
+      }
+      @case ('settings') {
+        <app-settings />
+      }
+    }
+  </main>
+</div>
+
+<!-- Create Task Modal -->
+<app-create-task-modal
+  [open]="isCreateTaskModalOpen()"
+  (closed)="closeCreateTaskModal()" />

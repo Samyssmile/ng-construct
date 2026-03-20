@@ -1,0 +1,20 @@
+/*
+ * Diese Component nutzt die CSS-Klassen aus dem Construct Design System.
+ * Die Styles müssen in der consuming App global importiert werden:
+ *
+ * @import '@neuravision/construct/foundations.css';
+ * @import '@neuravision/construct/components/components.css';
+ */
+
+/* Component-spezifische Overrides (falls nötig) */
+:host {
+  display: block;
+}
+
+.ct-data-table__table tr {
+  cursor: pointer;
+}
+
+.ct-data-table__table tr:hover {
+  background-color: var(--color-neutral-50);
+}

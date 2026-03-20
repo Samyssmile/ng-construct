@@ -1,0 +1,41 @@
+.view-title {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.tasks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4, 1rem);
+}
+
+.tasks-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4, 1rem);
+  margin-bottom: var(--space-4, 1rem);
+  flex-wrap: wrap;
+}
+
+.tasks-filters af-input {
+  min-width: 240px;
+}
+
+.tasks-loading {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-8, 2rem);
+}
+
+.type-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4, 1rem);
+}

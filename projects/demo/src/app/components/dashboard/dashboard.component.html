@@ -1,0 +1,109 @@
+<h2 class="view-title">Dashboard</h2>
+
+<!-- Metric Cards -->
+<div class="metrics-grid">
+  <af-card>
+    <div body class="metric-card">
+      <div class="metric-card__icon" afTooltip="Total tasks across all projects">
+        <af-icon name="task_alt" size="lg" />
+      </div>
+      <div class="metric-card__content">
+        <span class="metric-card__value">{{ totalTasks() }}</span>
+        <span class="metric-card__label">Total Tasks</span>
+      </div>
+    </div>
+  </af-card>
+
+  <af-card>
+    <div body class="metric-card">
+      <div class="metric-card__icon metric-card__icon--success" afTooltip="Tasks marked as done">
+        <af-icon name="check_circle" size="lg" />
+      </div>
+      <div class="metric-card__content">
+        <span class="metric-card__value">{{ completedTasks() }}</span>
+        <span class="metric-card__label">Completed</span>
+      </div>
+    </div>
+  </af-card>
+
+  <af-card>
+    <div body class="metric-card">
+      <div class="metric-card__icon metric-card__icon--info" afTooltip="Tasks currently in progress">
+        <af-icon name="pending" size="lg" />
+      </div>
+      <div class="metric-card__content">
+        <span class="metric-card__value">{{ inProgressTasks() }}</span>
+        <span class="metric-card__label">In Progress</span>
+      </div>
+    </div>
+  </af-card>
+
+  <af-card>
+    <div body class="metric-card">
+      <div class="metric-card__icon metric-card__icon--danger" afTooltip="Tasks past their due date">
+        <af-icon name="warning" size="lg" />
+      </div>
+      <div class="metric-card__content">
+        <span class="metric-card__value">{{ overdueTasks() }}</span>
+        <span class="metric-card__label">Overdue</span>
+      </div>
+    </div>
+  </af-card>
+</div>
+
+<!-- Project Progress -->
+<af-card>
+  <div header>
+    <h3>Project Progress</h3>
+  </div>
+  <div body>
+    @for (project of projects(); track project.id) {
+      <div class="project-row">
+        <div class="project-row__info">
+          <af-icon [name]="project.icon" size="sm" />
+          <span class="project-row__name">{{ project.name }}</span>
+          <span class="project-row__count">{{ project.completedCount }}/{{ project.taskCount }}</span>
+        </div>
+        <af-progress-bar
+          [value]="project.progress"
+          [variant]="getProgressVariant(project.progress)"
+          size="sm"
+          [label]="project.name + ' progress'" />
+      </div>
+    }
+  </div>
+</af-card>
+
+<!-- Recent Tasks -->
+<af-card>
+  <div header class="recent-header">
+    <h3>Recent Tasks</h3>
+  </div>
+  <div body>
+    <af-data-table
+      [data]="recentTasks()"
+      [columns]="recentColumns"
+      [config]="{ striped: true, compact: true }"
+      rowId="id">
+
+      <ng-template afCellDef="status" let-row>
+        <af-badge [variant]="getStatusVariant(row.status)">
+          {{ row.status | afFormatLabel }}
+        </af-badge>
+      </ng-template>
+
+      <ng-template afCellDef="priority" let-row>
+        <af-badge [variant]="getPriorityVariant(row.priority)">
+          {{ row.priority | afFormatLabel }}
+        </af-badge>
+      </ng-template>
+    </af-data-table>
+
+    <div class="pagination-wrapper">
+      <af-pagination
+        [currentPage]="recentTasksPage()"
+        [totalPages]="totalRecentPages()"
+        (pageChange)="onRecentPageChange($event)" />
+    </div>
+  </div>
+</af-card>

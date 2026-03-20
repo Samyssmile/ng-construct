@@ -1,0 +1,76 @@
+<af-modal
+  [open]="open()"
+  title="Create New Task"
+  (closed)="onCancel()">
+
+  <form body [formGroup]="form" (ngSubmit)="onSubmit()">
+    <af-input
+      label="Task Name"
+      placeholder="Enter task title"
+      [required]="true"
+      formControlName="title"
+      [error]="form.controls.title.touched && form.controls.title.invalid ? 'Task name is required' : ''" />
+
+    <af-textarea
+      label="Description"
+      placeholder="Describe the task..."
+      [rows]="4"
+      formControlName="description" />
+
+    <div class="form-row">
+      <af-select
+        label="Priority"
+        [options]="priorityOptions"
+        formControlName="priority" />
+
+      <af-select
+        label="Assignee"
+        placeholder="Select assignee"
+        [options]="assigneeOptions()"
+        formControlName="assigneeId" />
+    </div>
+
+    <div class="form-row">
+      <af-select
+        label="Project"
+        placeholder="Select project"
+        [options]="projectOptions()"
+        formControlName="projectId" />
+
+      <af-datepicker
+        label="Due Date"
+        placeholder="Pick a date"
+        formControlName="dueDate" />
+    </div>
+
+    <af-chip-input
+      label="Tags"
+      placeholder="Add tags..."
+      hint="Press Enter or comma to add"
+      formControlName="tags" />
+
+    <div class="form-field-group">
+      <label class="form-field-group__label">Task Type</label>
+      <div class="radio-group">
+        <af-radio name="type" value="BUG" formControlName="type">Bug</af-radio>
+        <af-radio name="type" value="FEATURE" formControlName="type">Feature</af-radio>
+        <af-radio name="type" value="IMPROVEMENT" formControlName="type">Improvement</af-radio>
+      </div>
+    </div>
+
+    <af-checkbox formControlName="isUrgent">Mark as urgent</af-checkbox>
+
+    <af-switch formControlName="sendNotifications">Send notifications to assignee</af-switch>
+  </form>
+
+  <div footer class="modal-footer">
+    <af-button variant="secondary" (clicked)="onCancel()">Cancel</af-button>
+    <af-button
+      variant="primary"
+      [disabled]="form.invalid"
+      (clicked)="onSubmit()">
+      <af-icon name="add_task" size="sm" />
+      Create Task
+    </af-button>
+  </div>
+</af-modal>

@@ -1,0 +1,92 @@
+.view-title {
+  margin: 0 0 var(--space-6, 1.5rem);
+  font-size: 1.5rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4, 1rem);
+  margin-bottom: var(--space-6, 1.5rem);
+}
+
+.metric-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+}
+
+.metric-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg, 0.75rem);
+  background: var(--color-neutral-100, #f3f4f6);
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.metric-card__icon--success { background: var(--color-success-50, #f0fdf4); color: var(--color-success-600, #16a34a); }
+.metric-card__icon--info { background: var(--color-info-50, #eff6ff); color: var(--color-info-600, #2563eb); }
+.metric-card__icon--danger { background: var(--color-danger-50, #fef2f2); color: var(--color-danger-600, #dc2626); }
+
+.metric-card__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-card__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.metric-card__label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: var(--space-1, 0.25rem);
+}
+
+/* Project Progress */
+af-card {
+  margin-bottom: var(--space-6, 1.5rem);
+}
+
+.project-row {
+  margin-bottom: var(--space-4, 1rem);
+}
+
+.project-row:last-child {
+  margin-bottom: 0;
+}
+
+.project-row__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+  margin-bottom: var(--space-2, 0.5rem);
+}
+
+.project-row__name {
+  font-weight: 500;
+}
+
+.project-row__count {
+  margin-left: auto;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+/* Recent Tasks */
+.recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4, 1rem);
+}

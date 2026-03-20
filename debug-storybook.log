@@ -1,0 +1,21 @@
+[22:45:41.303] [INFO] storybook v10.2.3
+[22:45:41.456] [DEBUG] Getting package.json info for /home/caedmon/work/accessful/frontend/design/accessful-design-implementation-workspace/package.json...
+[22:45:42.067] [INFO] Starting...
+[22:45:42.212] [DEBUG] Starting preview..
+[22:45:42.222] [INFO] Addon-docs: using MDX3
+[22:45:42.239] [INFO] Using implicit CSS loaders
+[22:45:42.240] [ERROR] Failed to build the preview
+[22:45:42.242] [ERROR] [38;2;241;97;97mSB_FRAMEWORK_ANGULAR_0001 (AngularLegacyBuildOptionsError): Your Storybook startup script uses a solution that is not supported anymore.
+You must use Angular builder to have an explicit configuration on the project used in angular.json.
+
+Please run 'npx storybook automigrate' to automatically fix your config.
+
+More info: 
+	- https://github.com/storybookjs/storybook/blob/next/MIGRATION.md#angular-drop-support-for-calling-storybook-directly
+	- https://github.com/storybookjs/storybook/tree/next/code/frameworks/angular#how-do-i-migrate-to-an-angular-storybook-builder
+[39m
+    at checkForLegacyBuildOptions (file://./node_modules/@storybook/angular/dist/server/framework-preset-angular-cli.js:310:11)
+    at Object.webpackFinal (file://./node_modules/@storybook/angular/dist/server/framework-preset-angular-cli.js:244:3)
+    at file://./node_modules/storybook/dist/_node-chunks/chunk-MVRFS4XG.js:10114:36
+[22:45:42.246] [WARN] Broken build, fix the error above.
+You may need to refresh the browser.

@@ -1,0 +1,75 @@
+<h2 class="view-title">Settings</h2>
+
+<af-tabs [(activeTab)]="activeTab">
+  <!-- Profile Tab -->
+  <af-tab-panel id="profile" label="Profile">
+    <af-card>
+      <div body class="settings-form">
+        <af-input
+          label="Full Name"
+          [(ngModel)]="profileName" />
+
+        <af-input
+          label="Email"
+          type="email"
+          [(ngModel)]="profileEmail" />
+
+        <af-select
+          label="Timezone"
+          [options]="timezoneOptions"
+          [(ngModel)]="timezone" />
+
+        <div class="settings-actions">
+          <af-button variant="primary" (clicked)="saveProfile()">Save Profile</af-button>
+        </div>
+      </div>
+    </af-card>
+  </af-tab-panel>
+
+  <!-- Notifications Tab -->
+  <af-tab-panel id="notifications" label="Notifications">
+    <af-card>
+      <div body class="settings-form">
+        <h3 class="settings-section-title">Channels</h3>
+        <af-switch [(ngModel)]="emailNotifications">Email notifications</af-switch>
+        <af-switch [(ngModel)]="pushNotifications">Push notifications</af-switch>
+
+        <h3 class="settings-section-title">Events</h3>
+        <af-checkbox [(ngModel)]="notifyOnAssignment">Notify when assigned to a task</af-checkbox>
+        <af-checkbox [(ngModel)]="notifyOnComments">Notify on task comments</af-checkbox>
+        <af-checkbox [(ngModel)]="notifyOnStatusChange">Notify on status changes</af-checkbox>
+
+        <div class="settings-actions">
+          <af-button variant="primary" (clicked)="saveNotifications()">Save Notifications</af-button>
+        </div>
+      </div>
+    </af-card>
+  </af-tab-panel>
+
+  <!-- Display Tab -->
+  <af-tab-panel id="display" label="Display">
+    <af-card>
+      <div body class="settings-form">
+        <div class="settings-field">
+          <label class="settings-field__label">Default View</label>
+          <af-toggle-group
+            [items]="viewModeItems"
+            [(value)]="defaultView"
+            ariaLabel="Default view mode" />
+        </div>
+
+        <af-select
+          label="Tasks per page"
+          [options]="perPageOptions"
+          [(ngModel)]="tasksPerPage" />
+
+        <af-switch [(ngModel)]="compactMode">Compact mode</af-switch>
+        <af-switch [(ngModel)]="showSidebar">Show sidebar</af-switch>
+
+        <div class="settings-actions">
+          <af-button variant="primary" (clicked)="saveDisplay()">Save Display</af-button>
+        </div>
+      </div>
+    </af-card>
+  </af-tab-panel>
+</af-tabs>
