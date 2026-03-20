@@ -27,3 +27,6 @@ export * from './sidebar';
 export * from './icon';
 export * from './slider';
 export * from './drawer';
+export * from './combobox';
+export * from './file-upload';
+export * from './select-menu';
