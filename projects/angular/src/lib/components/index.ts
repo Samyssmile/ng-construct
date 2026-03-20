@@ -24,3 +24,4 @@ export * from './toggle-group';
 export * from './toolbar';
 export * from './sidebar';
 export * from './icon';
+export * from './slider';
