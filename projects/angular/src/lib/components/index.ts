@@ -1,4 +1,5 @@
 // Components
+export * from './alert';
 export * from './accordion';
 export * from './button';
 export * from './input';
@@ -30,3 +31,6 @@ export * from './drawer';
 export * from './combobox';
 export * from './file-upload';
 export * from './select-menu';
+export * from './navbar';
+export * from './popover';
+export * from './banner';
