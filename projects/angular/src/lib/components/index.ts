@@ -25,3 +25,4 @@ export * from './toolbar';
 export * from './sidebar';
 export * from './icon';
 export * from './slider';
+export * from './drawer';
