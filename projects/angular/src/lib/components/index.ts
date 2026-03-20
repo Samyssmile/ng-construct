@@ -40,3 +40,4 @@ export * from './empty-state';
 export * from './skeleton';
 export * from './divider';
 export * from './field';
+export * from './table';
