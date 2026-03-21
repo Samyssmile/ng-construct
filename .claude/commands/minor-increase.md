@@ -1,0 +1,8 @@
+Bump the **minor** version of the library `@neuravision/ng-construct`.
+
+Steps:
+1. Read `projects/angular/package.json`
+2. Parse the current `version` field (semver: MAJOR.MINOR.PATCH)
+3. Increment MINOR by 1 and reset PATCH to 0 (e.g. `0.1.3` → `0.2.0`)
+4. Update the `version` field in `projects/angular/package.json`
+5. Print the old and new version to confirm
