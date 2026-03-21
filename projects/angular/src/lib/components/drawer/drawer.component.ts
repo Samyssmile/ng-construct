@@ -5,12 +5,12 @@ import {
   input,
   output,
   model,
-  signal,
   computed,
   effect,
   viewChild,
   ElementRef,
 } from '@angular/core';
+import { FocusTrap } from '../../utils/focus-trap';
 
 export type AfDrawerPosition = 'right' | 'left' | 'top' | 'bottom';
 export type AfDrawerSize = 'sm' | 'md' | 'lg' | 'full';
@@ -86,6 +86,7 @@ export type AfDrawerSize = 'sm' | 'md' | 'lg' | 'full';
 })
 export class AfDrawerComponent implements OnDestroy {
   private static nextId = 0;
+  private focusTrap = new FocusTrap();
 
   /** Two-way bindable open state */
   open = model(false);
@@ -115,8 +116,6 @@ export class AfDrawerComponent implements OnDestroy {
   readonly titleId = `af-drawer-title-${AfDrawerComponent.nextId++}`;
 
   private panelRef = viewChild<ElementRef<HTMLElement>>('panel');
-  private previousActiveElement: HTMLElement | null = null;
-  private focusableElements: HTMLElement[] = [];
 
   containerClasses = computed(() => {
     const classes = ['ct-drawer'];
@@ -145,7 +144,7 @@ export class AfDrawerComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.unlockBodyScroll();
-    this.restoreFocus();
+    this.focusTrap.restoreFocus();
   }
 
   /** Closes the drawer and emits the closed event */
@@ -169,56 +168,24 @@ export class AfDrawerComponent implements OnDestroy {
     }
 
     if (event.key === 'Tab') {
-      this.trapFocus(event);
+      const panel = this.panelRef()?.nativeElement;
+      this.focusTrap.handleTab(event, panel, panel);
     }
   }
 
   private onOpen(): void {
-    this.previousActiveElement = document.activeElement as HTMLElement;
+    this.focusTrap.saveFocus();
     this.lockBodyScroll();
     queueMicrotask(() => {
       if (!this.open()) return;
-      this.refreshFocusableElements();
-      const first = this.focusableElements[0];
-      if (first) {
-        first.focus();
-      } else {
-        this.panelRef()?.nativeElement.focus();
-      }
+      const panel = this.panelRef()?.nativeElement;
+      this.focusTrap.focusFirst(panel, panel);
     });
   }
 
   private onClose(): void {
     this.unlockBodyScroll();
-    this.restoreFocus();
-  }
-
-  private trapFocus(event: KeyboardEvent): void {
-    this.refreshFocusableElements();
-    if (this.focusableElements.length === 0) {
-      event.preventDefault();
-      this.panelRef()?.nativeElement.focus();
-      return;
-    }
-
-    const first = this.focusableElements[0];
-    const last = this.focusableElements[this.focusableElements.length - 1];
-    const active = document.activeElement as HTMLElement | null;
-
-    if (event.shiftKey && active === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }
-
-  private restoreFocus(): void {
-    if (this.previousActiveElement) {
-      this.previousActiveElement.focus();
-      this.previousActiveElement = null;
-    }
+    this.focusTrap.restoreFocus();
   }
 
   private lockBodyScroll(): void {
@@ -227,29 +194,5 @@ export class AfDrawerComponent implements OnDestroy {
 
   private unlockBodyScroll(): void {
     document.body.style.overflow = '';
-  }
-
-  private refreshFocusableElements(): void {
-    const panel = this.panelRef()?.nativeElement;
-    if (!panel) {
-      this.focusableElements = [];
-      return;
-    }
-    const selectors = [
-      'a[href]',
-      'area[href]',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])',
-    ];
-    this.focusableElements = Array.from(
-      panel.querySelectorAll<HTMLElement>(selectors.join(','))
-    ).filter(
-      (el) =>
-        !el.hasAttribute('disabled') &&
-        el.getAttribute('aria-hidden') !== 'true'
-    );
   }
 }

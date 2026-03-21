@@ -1,19 +1,30 @@
-import { Component, ChangeDetectionStrategy, ContentChild, ElementRef, input, output, computed, signal } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  ElementRef,
+  input,
+  output,
+  computed,
+  contentChild,
+} from '@angular/core';
 
 export type AfCardElevation = 'none' | 'sm' | 'md' | 'lg';
 export type AfCardPadding = 'none' | 'sm' | 'md' | 'lg';
 
 /**
- * Card component for containing content
+ * Card component for containing content.
+ *
+ * When `interactive` is set the card becomes keyboard-accessible with
+ * `role="button"`, roving `tabindex`, and Enter/Space activation.
  *
  * @example
  * <af-card elevation="md" padding="lg">
- *   <div header>
- *     <h3>Title</h3>
- *   </div>
- *   <div body>
- *     <p>Card content</p>
- *   </div>
+ *   <div header><h3>Title</h3></div>
+ *   <div body><p>Card content</p></div>
+ * </af-card>
+ *
+ * <af-card interactive ariaLabel="Open project" (cardClick)="open()">
+ *   <p body>Click me</p>
  * </af-card>
  */
 @Component({
@@ -23,67 +34,64 @@ export type AfCardPadding = 'none' | 'sm' | 'md' | 'lg';
     <section
       [class]="cardClasses()"
       [style]="cardStyles()"
-      (click)="onCardClick()">
-      @if (hasHeader()) {
-        <div class="ct-card__header">
-          <ng-content select="[header]"></ng-content>
-        </div>
-      }
-      <div class="ct-card__body">
-        <ng-content select="[body]"></ng-content>
-        <ng-content></ng-content>
+      [attr.role]="interactive() ? 'button' : null"
+      [attr.tabindex]="interactive() ? 0 : null"
+      [attr.aria-label]="ariaLabel() || null"
+      (click)="onCardClick()"
+      (keydown)="onCardKeydown($event)">
+      <div class="ct-card__header" [hidden]="!hasHeader()">
+        <ng-content select="[header]" />
       </div>
-      @if (hasFooter()) {
-        <div class="ct-card__footer">
-          <ng-content select="[footer]"></ng-content>
-        </div>
-      }
+      <div class="ct-card__body">
+        <ng-content select="[body]" />
+        <ng-content />
+      </div>
+      <div class="ct-card__footer" [hidden]="!hasFooter()">
+        <ng-content select="[footer]" />
+      </div>
     </section>
   `,
-  styles: [`
-    :host {
-      display: block;
-    }
-  `]
+  styles: [
+    `
+      :host {
+        display: block;
+      }
+    `,
+  ],
 })
 export class AfCardComponent {
-  /** Whether card is interactive (clickable/hoverable) */
+  /** Makes the card interactive (clickable, keyboard-accessible). */
   interactive = input(false);
 
-  /** Shadow elevation level */
+  /** Shadow elevation level. */
   elevation = input<AfCardElevation | null>(null);
 
-  /** Content padding level */
+  /** Content padding level. */
   padding = input<AfCardPadding | null>(null);
 
-  /** Click event emitter */
+  /** Accessible label for interactive cards. */
+  ariaLabel = input('');
+
+  /** Emitted when an interactive card is activated (click, Enter, or Space). */
   cardClick = output<void>();
 
-  hasHeader = signal(false);
-  hasFooter = signal(false);
-
-  @ContentChild('[header]', { read: ElementRef })
-  set headerContent(value: ElementRef | undefined) {
-    this.hasHeader.set(!!value);
-  }
-
-  @ContentChild('[footer]', { read: ElementRef })
-  set footerContent(value: ElementRef | undefined) {
-    this.hasFooter.set(!!value);
-  }
+  private headerRef = contentChild('[header]', { read: ElementRef });
+  private footerRef = contentChild('[footer]', { read: ElementRef });
+  hasHeader = computed(() => !!this.headerRef());
+  hasFooter = computed(() => !!this.footerRef());
 
   private static readonly ELEVATION_MAP: Record<AfCardElevation, string> = {
     none: 'none',
     sm: '0 1px 3px rgba(0, 0, 0, 0.08)',
     md: '0 4px 12px rgba(0, 0, 0, 0.08)',
-    lg: '0 8px 24px rgba(0, 0, 0, 0.12)'
+    lg: '0 8px 24px rgba(0, 0, 0, 0.12)',
   };
 
   private static readonly PADDING_MAP: Record<AfCardPadding, string> = {
     none: '0',
     sm: 'var(--space-3, 0.75rem)',
     md: 'var(--space-5, 1.25rem)',
-    lg: 'var(--space-7, 2rem)'
+    lg: 'var(--space-7, 2rem)',
   };
 
   cardClasses = computed(() => {
@@ -107,6 +115,14 @@ export class AfCardComponent {
 
   onCardClick(): void {
     if (this.interactive()) {
+      this.cardClick.emit();
+    }
+  }
+
+  onCardKeydown(event: KeyboardEvent): void {
+    if (!this.interactive()) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
       this.cardClick.emit();
     }
   }

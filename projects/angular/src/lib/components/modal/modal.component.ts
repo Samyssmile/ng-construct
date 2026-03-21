@@ -1,4 +1,5 @@
-import { Component, ChangeDetectionStrategy, ContentChild, ElementRef, OnDestroy, AfterViewInit, input, output, signal, effect, viewChild } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, OnDestroy, AfterViewInit, input, output, signal, computed, effect, viewChild, contentChild } from '@angular/core';
+import { FocusTrap } from '../../utils/focus-trap';
 
 /**
  * Modal/Dialog component with accessibility features
@@ -53,11 +54,9 @@ import { Component, ChangeDetectionStrategy, ContentChild, ElementRef, OnDestroy
             <ng-content select="[body]"></ng-content>
             <ng-content></ng-content>
           </div>
-          @if (hasFooter()) {
-            <div class="ct-modal__footer">
-              <ng-content select="[footer]"></ng-content>
-            </div>
-          }
+          <div class="ct-modal__footer" [hidden]="!hasFooter()">
+            <ng-content select="[footer]"></ng-content>
+          </div>
         </div>
       </div>
     }
@@ -70,6 +69,7 @@ import { Component, ChangeDetectionStrategy, ContentChild, ElementRef, OnDestroy
 })
 export class AfModalComponent implements OnDestroy, AfterViewInit {
   private static nextId = 0;
+  private focusTrap = new FocusTrap();
 
   /** Whether modal is open */
   open = input(false);
@@ -89,15 +89,9 @@ export class AfModalComponent implements OnDestroy, AfterViewInit {
   /** Unique title ID for aria-labelledby */
   titleId = `af-modal-title-${AfModalComponent.nextId++}`;
 
-  hasFooter = signal(false);
+  private footerRef = contentChild('[footer]', { read: ElementRef });
+  hasFooter = computed(() => !!this.footerRef());
 
-  @ContentChild('[footer]', { read: ElementRef })
-  set footerContent(value: ElementRef | undefined) {
-    this.hasFooter.set(!!value);
-  }
-
-  private previousActiveElement: HTMLElement | null = null;
-  private focusableElements: HTMLElement[] = [];
   private viewInitialized = signal(false);
 
   dialogRef = viewChild<ElementRef<HTMLElement>>('dialog');
@@ -108,7 +102,7 @@ export class AfModalComponent implements OnDestroy, AfterViewInit {
     if (isOpen && initialized) {
       this.onOpen();
     } else if (!isOpen) {
-      this.restoreFocus();
+      this.focusTrap.restoreFocus();
     }
   });
 
@@ -117,7 +111,7 @@ export class AfModalComponent implements OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
-    this.restoreFocus();
+    this.focusTrap.restoreFocus();
   }
 
   onEscapeKey(): void {
@@ -128,25 +122,7 @@ export class AfModalComponent implements OnDestroy, AfterViewInit {
 
   onKeydown(event: KeyboardEvent): void {
     if (!this.open() || event.key !== 'Tab') return;
-
-    this.refreshFocusableElements();
-    if (this.focusableElements.length === 0) {
-      event.preventDefault();
-      this.dialogRef()?.nativeElement.focus();
-      return;
-    }
-
-    const first = this.focusableElements[0];
-    const last = this.focusableElements[this.focusableElements.length - 1];
-    const active = document.activeElement as HTMLElement | null;
-
-    if (event.shiftKey && active === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    this.focusTrap.handleTab(event, this.dialogRef()?.nativeElement, this.dialogRef()?.nativeElement);
   }
 
   onBackdropClick(event: MouseEvent): void {
@@ -160,42 +136,10 @@ export class AfModalComponent implements OnDestroy, AfterViewInit {
   }
 
   private onOpen(): void {
-    this.previousActiveElement = document.activeElement as HTMLElement;
-    this.refreshFocusableElements();
+    this.focusTrap.saveFocus();
     queueMicrotask(() => {
       if (!this.open()) return;
-      const first = this.focusableElements[0];
-      if (first) {
-        first.focus();
-      } else {
-        this.dialogRef()?.nativeElement.focus();
-      }
+      this.focusTrap.focusFirst(this.dialogRef()?.nativeElement, this.dialogRef()?.nativeElement);
     });
-  }
-
-  private restoreFocus(): void {
-    if (this.previousActiveElement) {
-      this.previousActiveElement.focus();
-      this.previousActiveElement = null;
-    }
-  }
-
-  private refreshFocusableElements(): void {
-    const dialog = this.dialogRef()?.nativeElement;
-    if (!dialog) {
-      this.focusableElements = [];
-      return;
-    }
-    const selectors = [
-      'a[href]',
-      'area[href]',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])'
-    ];
-    this.focusableElements = Array.from(dialog.querySelectorAll<HTMLElement>(selectors.join(',')))
-      .filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
   }
 }

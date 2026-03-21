@@ -17,6 +17,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { FocusTrap } from '../../utils/focus-trap';
 
 export type AfPopoverPosition = 'top' | 'bottom' | 'left' | 'right';
 export type AfPopoverAlign = 'start' | 'center' | 'end';
@@ -124,6 +125,7 @@ export class AfPopoverTriggerDirective {
 })
 export class AfPopoverComponent implements AfPopoverApi, OnDestroy {
   private static nextId = 0;
+  private focusTrap = new FocusTrap();
 
   /** Two-way bindable open state. */
   open = model(false);
@@ -158,8 +160,6 @@ export class AfPopoverComponent implements AfPopoverApi, OnDestroy {
   private wrapperRef = viewChild<ElementRef<HTMLElement>>('wrapper');
   private contentRef = viewChild<ElementRef<HTMLElement>>('popoverContent');
   private triggerDirective = contentChild(AfPopoverTriggerDirective);
-  private previousActiveElement: HTMLElement | null = null;
-  private focusableElements: HTMLElement[] = [];
   private flippedSide = signal<AfPopoverPosition | null>(null);
 
   /** Effective side after auto-flip evaluation. */
@@ -183,7 +183,7 @@ export class AfPopoverComponent implements AfPopoverApi, OnDestroy {
   });
 
   ngOnDestroy(): void {
-    this.restoreFocus();
+    this.focusTrap.restoreFocus();
   }
 
   /** Toggle the popover open state. */
@@ -213,62 +213,30 @@ export class AfPopoverComponent implements AfPopoverApi, OnDestroy {
     if (!this.open()) return;
     const trigger = this.triggerDirective()?.elementRef.nativeElement;
     if (trigger) {
-      this.previousActiveElement = trigger;
+      this.focusTrap.setReturnFocus(trigger);
     }
     this.close();
   }
 
   onKeydown(event: KeyboardEvent): void {
     if (!this.open() || event.key !== 'Tab') return;
-    this.trapFocus(event);
+    const content = this.contentRef()?.nativeElement;
+    this.focusTrap.handleTab(event, content, content);
   }
 
   private onOpen(): void {
-    this.previousActiveElement = document.activeElement as HTMLElement;
+    this.focusTrap.saveFocus();
     this.flippedSide.set(this.computeFlippedSide());
     queueMicrotask(() => {
       if (!this.open()) return;
-      this.refreshFocusableElements();
-      const first = this.focusableElements[0];
-      if (first) {
-        first.focus();
-      } else {
-        this.contentRef()?.nativeElement.focus();
-      }
+      const content = this.contentRef()?.nativeElement;
+      this.focusTrap.focusFirst(content, content);
     });
   }
 
   private onClose(): void {
     this.flippedSide.set(null);
-    this.restoreFocus();
-  }
-
-  private restoreFocus(): void {
-    if (this.previousActiveElement) {
-      this.previousActiveElement.focus();
-      this.previousActiveElement = null;
-    }
-  }
-
-  private trapFocus(event: KeyboardEvent): void {
-    this.refreshFocusableElements();
-    if (this.focusableElements.length === 0) {
-      event.preventDefault();
-      this.contentRef()?.nativeElement.focus();
-      return;
-    }
-
-    const first = this.focusableElements[0];
-    const last = this.focusableElements[this.focusableElements.length - 1];
-    const active = document.activeElement as HTMLElement | null;
-
-    if (event.shiftKey && active === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault();
-      first.focus();
-    }
+    this.focusTrap.restoreFocus();
   }
 
   private computeFlippedSide(): AfPopoverPosition {
@@ -307,29 +275,5 @@ export class AfPopoverComponent implements AfPopoverApi, OnDestroy {
     if (space[opposite] >= needed[opposite]) return opposite;
 
     return preferred;
-  }
-
-  private refreshFocusableElements(): void {
-    const content = this.contentRef()?.nativeElement;
-    if (!content) {
-      this.focusableElements = [];
-      return;
-    }
-    const selectors = [
-      'a[href]',
-      'area[href]',
-      'button:not([disabled])',
-      'input:not([disabled])',
-      'select:not([disabled])',
-      'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])',
-    ];
-    this.focusableElements = Array.from(
-      content.querySelectorAll<HTMLElement>(selectors.join(','))
-    ).filter(
-      (el) =>
-        !el.hasAttribute('disabled') &&
-        el.getAttribute('aria-hidden') !== 'true'
-    );
   }
 }

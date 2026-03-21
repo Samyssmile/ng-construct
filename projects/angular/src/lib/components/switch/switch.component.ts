@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, model, forwardRef } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, model, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 /**
@@ -27,9 +27,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
         role="switch"
         [checked]="checked()"
         [disabled]="disabled()"
+        [attr.aria-label]="ariaLabel() || null"
         (change)="onChange($event)"
-        (blur)="onTouched()"
-      />
+        (blur)="onTouched()" />
       <span class="ct-switch__label">
         <ng-content></ng-content>
       </span>
@@ -42,7 +42,10 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   `]
 })
 export class AfSwitchComponent implements ControlValueAccessor {
-  /** Whether switch is disabled */
+  /** Accessible label for icon-only or unlabeled switches. */
+  ariaLabel = input('');
+
+  /** Whether switch is disabled. */
   disabled = model(false);
 
   /** Checked state - supports two-way binding via [(checked)] */

@@ -13,14 +13,14 @@ export type AfBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'dange
   selector: 'af-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <span [class]="badgeClasses()">
+    <span [class]="badgeClasses()" [attr.aria-label]="ariaLabel() || null">
       @if (icon()) {
         <span class="ct-badge__icon" aria-hidden="true">{{ icon() }}</span>
       }
       @if (dot()) {
         <span class="ct-badge__dot" aria-hidden="true"></span>
       }
-      <ng-content></ng-content>
+      <ng-content />
     </span>
   `,
   styles: [`
@@ -30,7 +30,10 @@ export type AfBadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'dange
   `]
 })
 export class AfBadgeComponent {
-  /** Color variant */
+  /** Accessible label, useful when the badge has no visible text. */
+  ariaLabel = input('');
+
+  /** Color variant. */
   variant = input<AfBadgeVariant>('default');
 
   /** Icon character to display */
