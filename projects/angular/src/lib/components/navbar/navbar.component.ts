@@ -13,6 +13,7 @@ import {
   ElementRef,
   inject,
 } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 let nextId = 0;
 
@@ -27,39 +28,60 @@ export type AfNavbarVariant =
   | 'bordered';
 
 /**
- * Individual navigation item used within af-navbar.
+ * Individual navigation item used within af-navbar or af-toolbar.
+ *
+ * Supports Angular Router via `routerLink`, standard links via `href`,
+ * and button mode when neither is provided. Content projection allows
+ * icons and custom markup inside the link.
  *
  * @example
- * <af-nav-item label="Dashboard" href="/dashboard" [active]="true" />
+ * <af-nav-item label="Dashboard" routerLink="/dashboard">
+ *   <af-icon name="dashboard" /> Dashboard
+ * </af-nav-item>
  */
 @Component({
   selector: 'af-nav-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, RouterLinkActive],
   template: `
     <li class="ct-navbar__item" role="none">
-      @if (href()) {
+      @if (routerLink()) {
         <a
           #linkEl
           class="ct-navbar__link"
+          [routerLink]="routerLink()!"
+          routerLinkActive="ct-navbar__link--active"
+          role="menuitem"
+          [attr.aria-disabled]="disabled() || null"
+          [attr.tabindex]="rovingTabindex()"
+          (click)="onClick($event)">
+          <ng-content>{{ label() }}</ng-content>
+        </a>
+      } @else if (href()) {
+        <a
+          #linkEl
+          class="ct-navbar__link"
+          [class.ct-navbar__link--active]="active()"
           [href]="href()"
           role="menuitem"
           [attr.aria-current]="active() ? 'page' : null"
           [attr.aria-disabled]="disabled() || null"
           [attr.tabindex]="rovingTabindex()"
           (click)="onClick($event)">
-          {{ label() }}
+          <ng-content>{{ label() }}</ng-content>
         </a>
       } @else {
         <button
           #linkEl
           class="ct-navbar__link"
+          [class.ct-navbar__link--active]="active()"
           type="button"
           role="menuitem"
           [attr.aria-current]="active() ? 'page' : null"
           [attr.aria-disabled]="disabled() || null"
           [attr.tabindex]="rovingTabindex()"
           (click)="onClick($event)">
-          {{ label() }}
+          <ng-content>{{ label() }}</ng-content>
         </button>
       }
     </li>
@@ -73,13 +95,16 @@ export type AfNavbarVariant =
   ],
 })
 export class AfNavItemComponent {
-  /** Text label for the navigation item. */
+  /** Text label shown as fallback when no content is projected. Also used by the mobile menu. */
   label = input.required<string>();
 
   /** URL for the navigation link. Renders as `<a>` when provided, `<button>` otherwise. */
   href = input('');
 
-  /** Marks this item as the currently active page. */
+  /** Angular Router link. Renders as `<a>` with routerLink and auto-active detection. */
+  routerLink = input<string | string[] | null>(null);
+
+  /** Marks this item as the currently active page (used for href/button mode, routerLink auto-detects). */
   active = input(false, { transform: booleanAttribute });
 
   /** Disables interaction with this item. */
@@ -113,14 +138,17 @@ export class AfNavItemComponent {
  * @example
  * <af-navbar ariaLabel="Main navigation">
  *   <a brand class="ct-navbar__brand" href="/">My App</a>
- *   <af-nav-item label="Dashboard" href="/dashboard" [active]="true" />
- *   <af-nav-item label="Settings" href="/settings" />
+ *   <af-nav-item label="Dashboard" routerLink="/dashboard">
+ *     <af-icon name="dashboard" /> Dashboard
+ *   </af-nav-item>
+ *   <af-nav-item label="Settings" routerLink="/settings" />
  *   <button actions class="ct-button">Profile</button>
  * </af-navbar>
  */
 @Component({
   selector: 'af-navbar',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, RouterLinkActive],
   host: {
     '(keydown)': 'handleKeydown($event)',
     '(document:click)': 'onDocumentClick($event)',
@@ -163,7 +191,19 @@ export class AfNavItemComponent {
         role="menu"
         aria-label="Mobile navigation">
         @for (item of items(); track item) {
-          @if (item.href()) {
+          @if (item.routerLink(); as rl) {
+            <a
+              #mobileLink
+              class="ct-navbar__link"
+              [routerLink]="rl"
+              routerLinkActive="ct-navbar__link--active"
+              role="menuitem"
+              [attr.aria-disabled]="item.disabled() || null"
+              [attr.tabindex]="mobileMenuOpen() ? 0 : -1"
+              (click)="onMobileItemClick($event, item)">
+              {{ item.label() }}
+            </a>
+          } @else if (item.href()) {
             <a
               #mobileLink
               class="ct-navbar__link"
