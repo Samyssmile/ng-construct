@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, input, output, signal, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AfModalComponent,
@@ -14,8 +14,10 @@ import {
   AfIconComponent,
   AfToastService,
 } from '@neuravision/ng-construct';
+import { LucideListPlus } from '@lucide/angular';
 import { PmDataService } from '../../services/pm-data.service';
 import { TaskType, TaskPriority } from '../../data/models';
+import { computed } from '@angular/core';
 
 @Component({
   selector: 'app-create-task-modal',
@@ -33,6 +35,7 @@ import { TaskType, TaskPriority } from '../../data/models';
     AfSwitchComponent,
     AfButtonComponent,
     AfIconComponent,
+    LucideListPlus,
   ],
   templateUrl: './create-task-modal.component.html',
   styleUrl: './create-task-modal.component.css',

@@ -10,9 +10,9 @@ export const TEAM_MEMBERS: TeamMember[] = [
 ];
 
 export const PROJECTS: Project[] = [
-  { id: 'proj-1', name: 'Alpha', icon: 'rocket_launch', taskCount: 12, completedCount: 7 },
-  { id: 'proj-2', name: 'Beta', icon: 'science', taskCount: 8, completedCount: 3 },
-  { id: 'proj-3', name: 'Gamma', icon: 'devices', taskCount: 6, completedCount: 5 },
+  { id: 'proj-1', name: 'Alpha', icon: 'rocket', taskCount: 12, completedCount: 7 },
+  { id: 'proj-2', name: 'Beta', icon: 'flask-conical', taskCount: 8, completedCount: 3 },
+  { id: 'proj-3', name: 'Gamma', icon: 'monitor', taskCount: 6, completedCount: 5 },
   { id: 'proj-4', name: 'Delta', icon: 'cloud', taskCount: 5, completedCount: 1 },
 ];
 

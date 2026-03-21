@@ -1,7 +1,9 @@
 <div class="tasks-header">
   <h2 class="view-title">Tasks</h2>
   <af-button variant="primary" size="sm" (clicked)="createTask.emit()">
-    <af-icon name="add" size="sm" />
+    <af-icon size="sm">
+      <svg lucidePlus></svg>
+    </af-icon>
     New Task
   </af-button>
 </div>
@@ -22,7 +24,9 @@
     size="sm"
     [ngModel]="searchQuery()"
     (ngModelChange)="onSearchChange($event)">
-    <af-icon icon name="search" size="sm" />
+    <af-icon icon size="sm">
+      <svg lucideSearch></svg>
+    </af-icon>
   </af-input>
 </div>
 
@@ -57,7 +61,14 @@
 
     <ng-template afCellDef="type" let-row>
       <span class="type-cell">
-        <af-icon [name]="getTypeIcon(row.type)" size="sm" />
+        <af-icon size="sm">
+          @switch (row.type) {
+            @case ('BUG') { <svg lucideBug></svg> }
+            @case ('FEATURE') { <svg lucideZap></svg> }
+            @case ('IMPROVEMENT') { <svg lucideWrench></svg> }
+            @default { <svg lucideSquareCheck></svg> }
+          }
+        </af-icon>
         {{ row.type | afFormatLabel }}
       </span>
     </ng-template>

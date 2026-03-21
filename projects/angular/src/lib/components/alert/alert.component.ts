@@ -55,7 +55,7 @@ export type AfAlertVariant = 'info' | 'success' | 'warning' | 'danger';
             class="af-alert__dismiss"
             aria-label="Dismiss alert"
             (click)="dismiss()">
-            ×
+            <span class="ct-icon ct-icon--sm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>
           </button>
         }
       </div>

@@ -9,8 +9,17 @@ import {
   AfTooltipDirective,
   AfFormatLabelPipe,
 } from '@neuravision/ng-construct';
+import {
+  LucideClipboardCheck,
+  LucideCircleCheck,
+  LucideClock,
+  LucideTriangleAlert,
+  LucideRocket,
+  LucideFlaskConical,
+  LucideMonitor,
+  LucideCloud,
+} from '@lucide/angular';
 import { PmDataService } from '../../services/pm-data.service';
-import { TaskStatus, TaskPriority } from '../../data/models';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +34,14 @@ import { TaskStatus, TaskPriority } from '../../data/models';
     AfBadgeComponent,
     AfTooltipDirective,
     AfFormatLabelPipe,
+    LucideClipboardCheck,
+    LucideCircleCheck,
+    LucideClock,
+    LucideTriangleAlert,
+    LucideRocket,
+    LucideFlaskConical,
+    LucideMonitor,
+    LucideCloud,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',

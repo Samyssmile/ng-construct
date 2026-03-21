@@ -3,20 +3,34 @@ import { Component, ChangeDetectionStrategy, input, computed } from '@angular/co
 export type AfIconSize = 'sm' | 'md' | 'lg' | 'xl';
 
 /**
- * Icon component that abstracts the icon rendering strategy.
+ * Icon wrapper that applies Construct Design System sizing via `ct-icon` classes.
  *
- * Currently uses Material Icons font ligatures. The icon strategy
- * can be changed centrally without modifying consumers.
+ * Uses content projection so any icon source can be used:
+ * Lucide, custom SVGs, or other icon libraries.
  *
- * @example
- * <af-icon name="delete" />
- * <af-icon name="edit" size="sm" />
+ * @example Using with Lucide
+ * ```html
+ * <af-icon size="sm">
+ *   <lucide-x />
+ * </af-icon>
+ * ```
+ *
+ * @example Using with inline SVG
+ * ```html
+ * <af-icon size="lg">
+ *   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+ *     <circle cx="12" cy="12" r="10" />
+ *   </svg>
+ * </af-icon>
+ * ```
  */
 @Component({
   selector: 'af-icon',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <span [class]="iconClasses()" aria-hidden="true">{{ name() }}</span>
+    <span [class]="iconClasses()" aria-hidden="true">
+      <ng-content />
+    </span>
   `,
   styles: [`
     :host {
@@ -27,14 +41,11 @@ export type AfIconSize = 'sm' | 'md' | 'lg' | 'xl';
   `]
 })
 export class AfIconComponent {
-  /** Material Icon name (ligature) */
-  name = input.required<string>();
-
   /** Icon size variant */
   size = input<AfIconSize>('md');
 
   iconClasses = computed(() => {
-    const classes = ['ct-icon', 'material-icons'];
+    const classes = ['ct-icon'];
     if (this.size() !== 'md') {
       classes.push(`ct-icon--${this.size()}`);
     }

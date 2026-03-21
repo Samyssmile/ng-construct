@@ -9,6 +9,18 @@ import {
   AfBreadcrumbsComponent, AfBreadcrumb,
   AfToastContainerComponent,
 } from '@neuravision/ng-construct';
+import {
+  LucideConstruction,
+  LucidePlus,
+  LucideBell,
+  LucideSettings,
+  LucideFolder,
+  LucideList,
+  LucideRocket,
+  LucideFlaskConical,
+  LucideMonitor,
+  LucideCloud,
+} from '@lucide/angular';
 import { PmDataService } from './services/pm-data.service';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { TasksComponent } from './components/tasks/tasks.component';
@@ -29,6 +41,16 @@ type AppView = 'dashboard' | 'tasks' | 'settings';
     AfBadgeComponent,
     AfBreadcrumbsComponent,
     AfToastContainerComponent,
+    LucideConstruction,
+    LucidePlus,
+    LucideBell,
+    LucideSettings,
+    LucideFolder,
+    LucideList,
+    LucideRocket,
+    LucideFlaskConical,
+    LucideMonitor,
+    LucideCloud,
     DashboardComponent,
     TasksComponent,
     CreateTaskModalComponent,

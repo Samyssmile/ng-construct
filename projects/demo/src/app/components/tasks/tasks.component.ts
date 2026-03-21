@@ -12,9 +12,16 @@ import {
   AfFormatLabelPipe,
   AfToastService,
 } from '@neuravision/ng-construct';
+import {
+  LucidePlus,
+  LucideSearch,
+  LucideBug,
+  LucideZap,
+  LucideWrench,
+  LucideSquareCheck,
+} from '@lucide/angular';
 import { FormsModule } from '@angular/forms';
 import { PmDataService } from '../../services/pm-data.service';
-import { Task } from '../../data/models';
 
 @Component({
   selector: 'app-tasks',
@@ -32,6 +39,12 @@ import { Task } from '../../data/models';
     AfSpinnerComponent,
     AfButtonComponent,
     AfFormatLabelPipe,
+    LucidePlus,
+    LucideSearch,
+    LucideBug,
+    LucideZap,
+    LucideWrench,
+    LucideSquareCheck,
   ],
   templateUrl: './tasks.component.html',
   styleUrl: './tasks.component.css',
@@ -131,13 +144,6 @@ export class TasksComponent {
       LOW: 'default', MEDIUM: 'info', HIGH: 'warning', CRITICAL: 'danger',
     };
     return map[priority] ?? 'default';
-  }
-
-  getTypeIcon(type: string): string {
-    const map: Record<string, string> = {
-      BUG: 'bug_report', FEATURE: 'new_releases', IMPROVEMENT: 'build',
-    };
-    return map[type] ?? 'task';
   }
 
   onFilterChange(): void {
