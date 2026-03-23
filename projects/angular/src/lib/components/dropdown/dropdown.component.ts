@@ -40,7 +40,7 @@ export interface AfDropdownItem {
     '(document:click)': 'onDocumentClick($event)',
   },
   template: `
-    <div class="ct-dropdown" [attr.data-state]="isOpen() ? 'open' : 'closed'">
+    <div class="ct-dropdown" [attr.data-state]="isOpen() ? 'open' : 'closed'" [attr.data-align]="align()" [attr.data-side]="side()">
       <button
         #trigger
         [id]="triggerId"
@@ -99,6 +99,12 @@ export class AfDropdownComponent {
 
   /** Trigger button size. */
   size = input<AfButtonSize>('md');
+
+  /** Horizontal alignment of the menu relative to the trigger. */
+  align = input<'start' | 'end'>('start');
+
+  /** Which side of the trigger the menu opens on. */
+  side = input<'bottom' | 'top'>('bottom');
 
   /** Menu items. */
   items = input<AfDropdownItem[]>([]);

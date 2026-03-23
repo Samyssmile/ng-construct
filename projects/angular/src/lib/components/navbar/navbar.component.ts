@@ -13,6 +13,7 @@ import {
   ElementRef,
   inject,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 let nextId = 0;
@@ -42,9 +43,13 @@ export type AfNavbarVariant =
 @Component({
   selector: 'af-nav-item',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, NgTemplateOutlet],
   template: `
     <li class="ct-navbar__item" role="none">
+      <ng-template #contentTpl>
+        <ng-content>{{ label() }}</ng-content>
+      </ng-template>
+
       @if (routerLink()) {
         <a
           #linkEl
@@ -55,7 +60,7 @@ export type AfNavbarVariant =
           [attr.aria-disabled]="disabled() || null"
           [attr.tabindex]="rovingTabindex()"
           (click)="onClick($event)">
-          <ng-content>{{ label() }}</ng-content>
+          <ng-container [ngTemplateOutlet]="contentTpl" />
         </a>
       } @else if (href()) {
         <a
@@ -68,7 +73,7 @@ export type AfNavbarVariant =
           [attr.aria-disabled]="disabled() || null"
           [attr.tabindex]="rovingTabindex()"
           (click)="onClick($event)">
-          <ng-content>{{ label() }}</ng-content>
+          <ng-container [ngTemplateOutlet]="contentTpl" />
         </a>
       } @else {
         <button
@@ -81,7 +86,7 @@ export type AfNavbarVariant =
           [attr.aria-disabled]="disabled() || null"
           [attr.tabindex]="rovingTabindex()"
           (click)="onClick($event)">
-          <ng-content>{{ label() }}</ng-content>
+          <ng-container [ngTemplateOutlet]="contentTpl" />
         </button>
       }
     </li>
