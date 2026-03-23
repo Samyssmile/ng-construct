@@ -2,12 +2,16 @@ import {
   Component,
   ChangeDetectionStrategy,
   ElementRef,
+  computed,
+  inject,
   input,
   output,
   signal,
   viewChild,
   viewChildren,
 } from '@angular/core';
+
+import { AfButtonSize } from '../button/button.component';
 
 export interface AfDropdownItem {
   label: string;
@@ -39,7 +43,8 @@ export interface AfDropdownItem {
     <div class="ct-dropdown" [attr.data-state]="isOpen() ? 'open' : 'closed'">
       <button
         #trigger
-        class="ct-button ct-button--secondary ct-dropdown__trigger"
+        [id]="triggerId"
+        [class]="triggerClasses()"
         [attr.aria-expanded]="isOpen()"
         [attr.aria-controls]="menuId"
         aria-haspopup="menu"
@@ -87,9 +92,13 @@ export interface AfDropdownItem {
 })
 export class AfDropdownComponent {
   private static nextId = 0;
+  private readonly hostRef = inject(ElementRef);
 
   /** Dropdown button label. */
   label = input('Actions');
+
+  /** Trigger button size. */
+  size = input<AfButtonSize>('md');
 
   /** Menu items. */
   items = input<AfDropdownItem[]>([]);
@@ -97,9 +106,21 @@ export class AfDropdownComponent {
   /** Emits the selected item's value. */
   itemSelected = output<unknown>();
 
+  /** Computed CSS classes for the trigger button. */
+  triggerClasses = computed(() => {
+    const classes = ['ct-button', 'ct-button--secondary', 'ct-dropdown__trigger'];
+    if (this.size() !== 'md') {
+      classes.push(`ct-button--${this.size()}`);
+    }
+    return classes.join(' ');
+  });
+
   triggerRef = viewChild<ElementRef<HTMLButtonElement>>('trigger');
   menuRef = viewChild<ElementRef<HTMLElement>>('menu');
   itemButtons = viewChildren<ElementRef<HTMLButtonElement>>('itemButton');
+
+  /** Non-separator items that can receive focus and be selected. */
+  private actionableItems = computed(() => this.items().filter((item) => !item.separator));
 
   isOpen = signal(false);
   focusedItemIndex = signal(0);
@@ -148,7 +169,7 @@ export class AfDropdownComponent {
 
   /** Handles keyboard events within the open menu. */
   onMenuKeydown(event: KeyboardEvent): void {
-    const actionableItems = this.getActionableItems();
+    const actionableItems = this.actionableItems();
     if (actionableItems.length === 0) return;
 
     switch (event.key) {
@@ -200,8 +221,7 @@ export class AfDropdownComponent {
   }
 
   onDocumentClick(event: MouseEvent): void {
-    const target = event.target as HTMLElement;
-    if (!target.closest('.ct-dropdown')) {
+    if (!this.hostRef.nativeElement.contains(event.target)) {
       this.close(false);
     }
   }
@@ -211,12 +231,12 @@ export class AfDropdownComponent {
    * actionable (non-separator) items.
    */
   getActionableIndex(item: AfDropdownItem): number {
-    return this.getActionableItems().indexOf(item);
+    return this.actionableItems().indexOf(item);
   }
 
   private open(focusLast = false): void {
     this.isOpen.set(true);
-    const actionableItems = this.getActionableItems();
+    const actionableItems = this.actionableItems();
     const startIndex = focusLast
       ? this.nextEnabledIndex(actionableItems.length, -1)
       : this.nextEnabledIndex(-1, 1);
@@ -245,7 +265,7 @@ export class AfDropdownComponent {
   }
 
   private nextEnabledIndex(from: number, direction: 1 | -1): number {
-    const actionableItems = this.getActionableItems();
+    const actionableItems = this.actionableItems();
     const len = actionableItems.length;
     if (len === 0) return 0;
 
@@ -259,10 +279,6 @@ export class AfDropdownComponent {
     return from;
   }
 
-  private getActionableItems(): AfDropdownItem[] {
-    return this.items().filter((item) => !item.separator);
-  }
-
   private handleTypeAhead(char: string): void {
     if (this.typeAheadTimer) {
       clearTimeout(this.typeAheadTimer);
@@ -273,7 +289,7 @@ export class AfDropdownComponent {
       this.typeAheadTimer = null;
     }, 500);
 
-    const actionableItems = this.getActionableItems();
+    const actionableItems = this.actionableItems();
     const startIndex = this.focusedItemIndex() + 1;
 
     for (let i = 0; i < actionableItems.length; i++) {
