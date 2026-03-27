@@ -1,12 +1,16 @@
 import { Component, signal, computed, ChangeDetectionStrategy, inject } from '@angular/core';
 import {
-  AfToolbarComponent,
-  AfSidebarComponent,
+  AfAppShellComponent,
+  AfAppShellPageHeaderComponent,
+  AfShellSidebarState,
+  AfNavbarComponent,
+  AfNavItemComponent,
   AfIconComponent,
   AfButtonComponent,
   AfTooltipDirective,
   AfBadgeComponent,
-  AfBreadcrumbsComponent, AfBreadcrumb,
+  AfBreadcrumbsComponent,
+  AfBreadcrumb,
   AfToastContainerComponent,
 } from '@neuravision/ng-construct';
 import {
@@ -33,8 +37,10 @@ type AppView = 'dashboard' | 'tasks' | 'settings';
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AfToolbarComponent,
-    AfSidebarComponent,
+    AfAppShellComponent,
+    AfAppShellPageHeaderComponent,
+    AfNavbarComponent,
+    AfNavItemComponent,
     AfIconComponent,
     AfButtonComponent,
     AfTooltipDirective,
@@ -63,7 +69,7 @@ export class App {
   private readonly dataService = inject(PmDataService);
 
   readonly currentView = signal<AppView>('dashboard');
-  readonly sidebarOpen = signal(true);
+  readonly sidebarState = signal<AfShellSidebarState>('expanded');
   readonly isCreateTaskModalOpen = signal(false);
   readonly selectedProjectId = signal<string | null>(null);
 

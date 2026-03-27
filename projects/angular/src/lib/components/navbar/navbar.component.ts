@@ -160,7 +160,9 @@ export class AfNavItemComponent {
   },
   template: `
     <header [class]="navbarClasses()">
-      <ng-content select="[brand]" />
+      <div class="ct-navbar__brand-wrapper">
+        <ng-content select="[brand]" />
+      </div>
 
       <button
         #toggleBtn
