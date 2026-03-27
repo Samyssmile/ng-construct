@@ -1,6 +1,8 @@
 // Components
 export * from './alert';
 export * from './accordion';
+export * from './app-shell';
+export * from './app-shell-v2';
 export * from './avatar';
 export * from './button';
 export * from './input';
