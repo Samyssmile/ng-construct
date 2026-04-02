@@ -52,7 +52,7 @@ class TestHostComponent {
 }
 
 @Component({
-  imports: TABLE_IMPORTS,
+  imports: [AfTableComponent, AfTableBodyComponent, AfTableRowComponent, AfTableCellComponent],
   template: `
     <af-table>
       <af-table-body>
@@ -68,7 +68,7 @@ class TestHostComponent {
 class CellTypeHostComponent {}
 
 @Component({
-  imports: TABLE_IMPORTS,
+  imports: [AfTableComponent, AfTableHeaderComponent, AfTableRowComponent, AfTableHeaderCellComponent],
   template: `
     <af-table>
       <af-table-header>
