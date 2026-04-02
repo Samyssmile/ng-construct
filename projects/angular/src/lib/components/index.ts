@@ -16,6 +16,7 @@ export * from './data-table';
 export * from './modal';
 export * from './toast';
 export * from './tabs';
+export * from './nav-tabs';
 export * from './dropdown';
 export * from './pagination';
 export * from './breadcrumbs';
