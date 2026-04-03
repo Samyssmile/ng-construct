@@ -1,6 +1,6 @@
 {
   "name": "@neuravision/ng-construct",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Angular components for the Construct Design System",
   "keywords": ["angular", "components", "design-system", "construct"],
   "peerDependencies": {

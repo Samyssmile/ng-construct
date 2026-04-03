@@ -5,6 +5,19 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-04-03
+
+### Added
+
+- **input:** SOTA-Audit — 65 Unit Tests, Test Harness, 6 Storybook Stories, i18n InjectionToken, axe-core a11y
+- **button:** SOTA-Audit — Tests, Harness, Stories, a11y-Warnung
+- **badge:** SOTA-Audit — Tests, Harness, Stories, Host-Bindings, a11y
+- **alert:** SOTA-Audit — Harness, axe-core, Stories, i18n, a11y
+- **accordion:** SOTA-Audit — Harness, axe-core, Stories, a11y-Announcer, i18n
+- **chip:** New chip component
+
+## [0.4.2] - 2026-04-03
+
 ## [0.4.1] - 2026-04-02
 
 ### Fixed
