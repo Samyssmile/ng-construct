@@ -4,12 +4,15 @@ import {
   ElementRef,
   computed,
   forwardRef,
+  inject,
   input,
   model,
   signal,
   viewChild,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
+import { AriaLiveAnnouncer } from '../../utils/aria-live-announcer';
+import { AF_SELECT_MENU_I18N } from './select-menu.i18n';
 
 export interface AfSelectMenuOption {
   value: unknown;
@@ -37,6 +40,17 @@ export interface AfSelectMenuOption {
  *   [multiple]="true"
  *   [formControl]="rolesControl">
  * </af-select-menu>
+ *
+ * @accessibility
+ * - Implements the WAI-ARIA Listbox pattern with a combobox trigger.
+ * - Keyboard: ArrowDown/Up to move highlight, Enter/Space to select,
+ *   Escape to close, Home/End to jump, Tab to select-and-close (single) or close (multi).
+ * - Focus stays on the combobox trigger; `aria-activedescendant` tracks the highlighted option.
+ * - Screen-reader announcements via {@link AriaLiveAnnouncer} for open/close/selection changes.
+ * - All user-facing strings are configurable via {@link AF_SELECT_MENU_I18N} for i18n.
+ * - Uses CSS logical properties for RTL layout support.
+ * - `aria-describedby` links to hint or error text; `aria-invalid` is set on error state.
+ * - Disabled options are marked with `aria-disabled` and skipped during keyboard navigation.
  */
 @Component({
   selector: 'af-select-menu',
@@ -75,7 +89,7 @@ export interface AfSelectMenuOption {
           aria-haspopup="listbox"
           [attr.aria-controls]="listboxId"
           [attr.aria-labelledby]="label() ? labelId : null"
-          [attr.aria-label]="label() ? null : 'Select option'"
+          [attr.aria-label]="label() ? null : i18n.selectOption"
           [attr.aria-activedescendant]="activeDescendantId()"
           [attr.aria-invalid]="error() ? true : null"
           [attr.aria-describedby]="getAriaDescribedBy()"
@@ -157,6 +171,8 @@ export interface AfSelectMenuOption {
 })
 export class AfSelectMenuComponent implements ControlValueAccessor {
   private static nextId = 0;
+  protected readonly i18n = inject(AF_SELECT_MENU_I18N);
+  private readonly announcer = inject(AriaLiveAnnouncer);
 
   /** Label shown above the select */
   label = input('');
@@ -293,6 +309,11 @@ export class AfSelectMenuComponent implements ControlValueAccessor {
     this.isOpen.set(true);
     this.highlightedIndex.set(this.findSelectedOrFirstIndex());
     this.scrollHighlightedIntoView();
+
+    const enabledCount = this.options().filter((o) => !o.disabled).length;
+    this.announcer.announce(
+      this.i18n.opened.replace('{count}', String(enabledCount)),
+    );
   }
 
   /** Closes the listbox */
@@ -300,6 +321,7 @@ export class AfSelectMenuComponent implements ControlValueAccessor {
     if (!this.isOpen()) return;
     this.isOpen.set(false);
     this.highlightedIndex.set(-1);
+    this.announcer.announce(this.i18n.closed);
   }
 
   /** Selects or toggles an option */
@@ -311,14 +333,23 @@ export class AfSelectMenuComponent implements ControlValueAccessor {
     if (this.multiple()) {
       const current = (this.value() as unknown[]) ?? [];
       const idx = current.findIndex((v) => cmp(v, option.value));
-      const next = idx >= 0
+      const wasSelected = idx >= 0;
+      const next = wasSelected
         ? [...current.slice(0, idx), ...current.slice(idx + 1)]
         : [...current, option.value];
       this.value.set(next);
       this.onChange(next);
+
+      const msg = wasSelected
+        ? this.i18n.deselected.replace('{label}', option.label)
+        : this.i18n.selected.replace('{label}', option.label);
+      this.announcer.announce(
+        `${msg}, ${this.i18n.countSelected.replace('{count}', String(next.length))}`,
+      );
     } else {
       this.value.set(option.value);
       this.onChange(option.value);
+      this.announcer.announce(this.i18n.selected.replace('{label}', option.label));
       this.closeListbox();
       this.triggerRef()?.nativeElement.focus();
     }
