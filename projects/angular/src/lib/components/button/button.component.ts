@@ -1,19 +1,41 @@
-import { Component, ChangeDetectionStrategy, booleanAttribute, input, output, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, booleanAttribute, input, output, computed, isDevMode, effect } from '@angular/core';
 
 export type AfButtonVariant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'accent' | 'link';
 export type AfButtonSize = 'sm' | 'md' | 'lg';
 export type AfButtonType = 'button' | 'submit' | 'reset';
 
 /**
- * Button component from the Construct Design System
+ * Button component from the Construct Design System.
  *
- * @example
- * <af-button variant="primary" (clicked)="handleClick()">Click me</af-button>
+ * Wraps a native `<button>` element with design system tokens and
+ * variant/size modifiers.
  *
- * @example Icon-only button
+ * @example Basic usage
+ * <af-button variant="primary" (clicked)="save()">Save</af-button>
+ *
+ * @example Variants
+ * <af-button variant="secondary">Secondary</af-button>
+ * <af-button variant="ghost">Ghost</af-button>
+ * <af-button variant="outline">Outline</af-button>
+ * <af-button variant="danger">Danger</af-button>
+ * <af-button variant="accent">Accent</af-button>
+ * <af-button variant="link">Link</af-button>
+ *
+ * @example Icon-only button (ariaLabel required)
  * <af-button variant="ghost" size="sm" iconOnly ariaLabel="Delete item">
  *   <af-icon name="delete" />
  * </af-button>
+ *
+ * @example Disabled button
+ * <af-button [disabled]="true">Cannot click</af-button>
+ *
+ * @accessibility
+ * - Uses native `<button>` element — keyboard (Enter/Space) and screen reader support built-in.
+ * - Disabled state uses the native `disabled` attribute.
+ * - Icon-only buttons must provide `ariaLabel` for screen reader users.
+ *   A dev-mode warning is emitted if `ariaLabel` is missing on an icon-only button.
+ * - Focus indicator: 2px outline via `:focus-visible` (design system CSS).
+ * - Reduced motion: `transform` animation disabled via `prefers-reduced-motion`.
  */
 @Component({
   selector: 'af-button',
@@ -76,6 +98,12 @@ export class AfButtonComponent {
     }
 
     return classes.join(' ');
+  });
+
+  private readonly iconOnlyWarning = effect(() => {
+    if (isDevMode() && this.iconOnly() && !this.ariaLabel()) {
+      console.warn('af-button: iconOnly buttons require an ariaLabel for screen readers.');
+    }
   });
 
   handleClick(event: MouseEvent): void {
