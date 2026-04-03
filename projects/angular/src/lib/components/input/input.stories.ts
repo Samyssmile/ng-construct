@@ -9,18 +9,21 @@ const meta: Meta<AfInputComponent> = {
     label: 'Email',
     type: 'email',
     placeholder: 'name@company.com',
-    hint: 'We will not share this.',
+    hint: '',
     error: '',
     required: false,
     disabled: false,
     iconPosition: null,
-    value: ''
+  },
+  argTypes: {
+    type: { control: 'select', options: ['text', 'email', 'password', 'number', 'search', 'tel', 'url'] },
+    iconPosition: { control: 'select', options: [null, 'left', 'right'] },
   },
   render: (args) => ({
-    props: args,
+    props: { ...args, value: '' },
     imports: [FormsModule, AfInputComponent],
     template: `
-      <ct-input
+      <af-input
         [label]="label"
         [type]="type"
         [placeholder]="placeholder"
@@ -29,12 +32,45 @@ const meta: Meta<AfInputComponent> = {
         [required]="required"
         [disabled]="disabled"
         [iconPosition]="iconPosition"
-        [(ngModel)]="value">
-      </ct-input>
-    `
-  })
+        [(ngModel)]="value"
+      />
+    `,
+  }),
 };
 
 export default meta;
 
 export const Default: StoryObj<AfInputComponent> = {};
+
+export const WithHint: StoryObj<AfInputComponent> = {
+  args: {
+    hint: 'We will not share this.',
+  },
+};
+
+export const WithError: StoryObj<AfInputComponent> = {
+  args: {
+    error: 'Please enter a valid email address.',
+  },
+};
+
+export const Required: StoryObj<AfInputComponent> = {
+  args: {
+    required: true,
+  },
+};
+
+export const Disabled: StoryObj<AfInputComponent> = {
+  args: {
+    disabled: true,
+    placeholder: 'Cannot edit',
+  },
+};
+
+export const Password: StoryObj<AfInputComponent> = {
+  args: {
+    label: 'Password',
+    type: 'password',
+    placeholder: 'Enter password',
+  },
+};
