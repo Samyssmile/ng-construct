@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AfAccordionComponent, AfAccordionItemComponent } from './accordion.component';
+import { checkA11y } from '../../testing/axe-helper';
 
 // ---------------------------------------------------------------------------
 // Test host components
@@ -253,6 +254,33 @@ describe('AfAccordionComponent', () => {
 
     // Should skip disabled item 2 and wrap to item 0
     expect(document.activeElement).toBe(triggers[0]);
+  });
+});
+
+describe('Accessibility (axe-core)', () => {
+  let fixture: ComponentFixture<TestHostComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TestHostComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TestHostComponent);
+    fixture.detectChanges();
+  });
+
+  it('should have no violations when all items are collapsed', async () => {
+    await checkA11y(fixture.nativeElement);
+  });
+
+  it('should have no violations when an item is expanded', async () => {
+    summaries(fixture)[0].click();
+    fixture.detectChanges();
+    await checkA11y(fixture.nativeElement);
+  });
+
+  it('should have no violations with a disabled item', async () => {
+    await checkA11y(fixture.nativeElement);
   });
 });
 

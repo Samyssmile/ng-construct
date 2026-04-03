@@ -12,6 +12,8 @@ import {
   inject,
   forwardRef,
 } from '@angular/core';
+import { AriaLiveAnnouncer } from '../../utils/aria-live-announcer';
+import { AF_ACCORDION_I18N } from './accordion.i18n';
 
 let nextId = 0;
 
@@ -73,6 +75,8 @@ let nextId = 0;
 export class AfAccordionItemComponent {
   private itemId = nextId++;
   private accordion = inject(forwardRef(() => AfAccordionComponent), { optional: true });
+  private announcer = inject(AriaLiveAnnouncer);
+  private i18n = inject(AF_ACCORDION_I18N);
 
   /** Heading text displayed in the accordion trigger. */
   heading = input.required<string>();
@@ -111,6 +115,8 @@ export class AfAccordionItemComponent {
     if (willExpand) {
       this.accordion?.onItemExpanded(this);
     }
+    const template = willExpand ? this.i18n.expanded : this.i18n.collapsed;
+    this.announcer.announce(template.replace('{heading}', this.heading()));
   }
 
   /** Programmatically collapse this item. */
