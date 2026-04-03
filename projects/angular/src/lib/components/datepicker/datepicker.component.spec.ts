@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -387,22 +387,22 @@ describe('AfDatepickerComponent', () => {
       expect(host.lastDateChange()).toEqual(new Date(today.getFullYear(), today.getMonth(), 15));
     });
 
-    it('should display formatted date in input after selection', fakeAsync(() => {
+    it('should display formatted date in input after selection', async () => {
       host.value.set(new Date(2025, 0, 15));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(getInput().value).toBe('Jan 15, 2025');
-    }));
+    });
 
-    it('should respect custom dateFormat', fakeAsync(() => {
+    it('should respect custom dateFormat', async () => {
       host.dateFormat.set('dd.MM.yyyy');
       host.value.set(new Date(2025, 0, 15));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(getInput().value).toBe('15.01.2025');
-    }));
+    });
 
     it('should mark selected day with aria-selected', () => {
       openDatepicker();
@@ -444,43 +444,43 @@ describe('AfDatepickerComponent', () => {
       expect(getClearBtn()).toBeNull();
     });
 
-    it('should show clear button when value is set', fakeAsync(() => {
+    it('should show clear button when value is set', async () => {
       host.value.set(new Date(2025, 0, 15));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(getClearBtn()).toBeTruthy();
-    }));
+    });
 
-    it('should clear value when clear button is clicked', fakeAsync(() => {
+    it('should clear value when clear button is clicked', async () => {
       host.value.set(new Date(2025, 0, 15));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
 
       getClearBtn()!.click();
       fixture.detectChanges();
       expect(host.value()).toBeNull();
       expect(getInput().value).toBe('');
-    }));
+    });
 
-    it('should have accessible aria-label on clear button', fakeAsync(() => {
+    it('should have accessible aria-label on clear button', async () => {
       host.value.set(new Date(2025, 0, 15));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(getClearBtn()!.getAttribute('aria-label')).toBe('Clear date');
-    }));
+    });
 
-    it('should clear value on Delete key when input is focused', fakeAsync(() => {
+    it('should clear value on Delete key when input is focused', async () => {
       host.value.set(new Date(2025, 0, 15));
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
 
       sendKey(getInput(), 'Delete');
       expect(host.value()).toBeNull();
-    }));
+    });
   });
 
   // ── Today Button ──────────────────────────────────────────
@@ -715,13 +715,13 @@ describe('AfDatepickerComponent', () => {
       fixture.detectChanges();
 
       openDatepicker();
-      const component = fixture.debugElement.children[0].componentInstance as AfDatepickerComponent;
-      component.yearPageStart.set(2020);
+      getTitleButton().click();
+      fixture.detectChanges();
+      getTitleButton().click();
       fixture.detectChanges();
 
-      getTitleButton().click();
-      fixture.detectChanges();
-      getTitleButton().click();
+      const component = fixture.debugElement.children[0].componentInstance as AfDatepickerComponent;
+      component.yearPageStart.set(2020);
       fixture.detectChanges();
 
       expect(getYearButtons()[0].disabled).toBe(true); // 2020
@@ -807,14 +807,14 @@ describe('AfDatepickerComponent', () => {
       expect(day10!.hasAttribute('data-range-start')).toBe(true);
     });
 
-    it('should show formatted range in input', fakeAsync(() => {
+    it('should show formatted range in input', async () => {
       host.value.set({ start: new Date(2025, 0, 10), end: new Date(2025, 0, 20) });
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(getInput().value).toContain('Jan 10, 2025');
       expect(getInput().value).toContain('Jan 20, 2025');
-    }));
+    });
   });
 
   // ── ISO Value Format ──────────────────────────────────────
@@ -836,14 +836,14 @@ describe('AfDatepickerComponent', () => {
       );
     });
 
-    it('should accept ISO string as writeValue in single mode', fakeAsync(() => {
+    it('should accept ISO string as writeValue in single mode', async () => {
       host.valueFormat.set('iso');
       host.value.set('2025-01-15');
       fixture.detectChanges();
-      tick();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(getInput().value).toBe('Jan 15, 2025');
-    }));
+    });
 
     it('should emit ISO range when valueFormat is iso in range mode', () => {
       host.mode.set('range');
