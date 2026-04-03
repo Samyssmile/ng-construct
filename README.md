@@ -1,31 +1,25 @@
 # @neuravision/ng-construct
 
-Angular component library for the [Construct Design System](https://samyssmile.github.io/construct/). Provides 44 ready-to-use, accessible Angular components built on top of `@neuravision/construct` CSS foundations.
+Angular Component Library for the [Construct Design System](https://samyssmile.github.io/construct/).
 
 [![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org)
 [![npm](https://img.shields.io/npm/v/@neuravision/ng-construct)](https://www.npmjs.com/package/@neuravision/ng-construct)
 
-## Quick Start
-
-### Install
+## Install
 
 ```bash
 npm install @neuravision/ng-construct @neuravision/construct
 ```
 
-### Add Global Styles
-
-Include the design tokens and component styles in your `styles.css`:
+Add global styles to your `styles.css`:
 
 ```css
 @import '@neuravision/construct/foundations.css';
 @import '@neuravision/construct/components/components.css';
 ```
 
-### Use Components
-
-All components are standalone — import only what you need:
+## Usage
 
 ```typescript
 import { AfButtonComponent, AfInputComponent } from '@neuravision/ng-construct';
@@ -42,90 +36,68 @@ export class MyComponent {}
 
 ## Components
 
-| Category | Components |
-|----------|-----------|
-| **Actions** | Button, Toggle Group, Toolbar |
-| **Data Display** | Data Table, Table, List, Badge, Chip Input, Avatar, Icon |
-| **Data Entry** | Input, Textarea, Select, Select Menu, Combobox, Checkbox, Radio, Switch, Slider, Datepicker, File Upload |
-| **Feedback** | Alert, Banner, Toast, Progress Bar, Spinner, Skeleton, Empty State |
-| **Layout** | Card, Divider, Accordion, Tabs, Sidebar, Drawer |
-| **Navigation** | Navbar, Breadcrumbs, Pagination, Skip Link |
-| **Overlays** | Modal, Popover, Tooltip, Dropdown |
-| **Form** | Field |
-
-All components follow Angular best practices:
-- Signal-based inputs/outputs (`input()` / `output()`)
-- `ChangeDetectionStrategy.OnPush`
-- Form controls implement `ControlValueAccessor`
-- WCAG AA accessible
+| Component | Selector | Kategorie |
+|-----------|----------|-----------|
+| Accordion | `af-accordion` | Layout |
+| Alert | `af-alert` | Feedback |
+| App Shell | `af-app-shell` | Layout |
+| App Shell V2 | `af-app-shell-v2` | Layout |
+| Avatar | `af-avatar` | Data Display |
+| Badge | `af-badge` | Data Display |
+| Banner | `af-banner` | Feedback |
+| Breadcrumbs | `af-breadcrumbs` | Navigation |
+| Button | `af-button` | Actions |
+| Card | `af-card` | Layout |
+| Checkbox | `af-checkbox` | Data Entry |
+| Chip | `af-chip` | Data Display |
+| Chip Input | `af-chip-input` | Data Entry |
+| Combobox | `af-combobox` | Data Entry |
+| Data Table | `af-data-table` | Data Display |
+| Datepicker | `af-datepicker` | Data Entry |
+| Divider | `af-divider` | Layout |
+| Drawer | `af-drawer` | Overlays |
+| Dropdown | `af-dropdown` | Overlays |
+| Empty State | `af-empty-state` | Feedback |
+| Field | `af-field` | Form |
+| File Upload | `af-file-upload` | Data Entry |
+| Icon | `af-icon` | Data Display |
+| Input | `af-input` | Data Entry |
+| List | `af-list` | Data Display |
+| Modal | `af-modal` | Overlays |
+| Navbar | `af-navbar` | Navigation |
+| Nav Tabs | `af-nav-tabs` | Navigation |
+| Pagination | `af-pagination` | Navigation |
+| Popover | `af-popover` | Overlays |
+| Progress Bar | `af-progress-bar` | Feedback |
+| Radio | `af-radio` | Data Entry |
+| Select | `af-select` | Data Entry |
+| Select Menu | `af-select-menu` | Data Entry |
+| Sidebar | `af-sidebar` | Layout |
+| Skeleton | `af-skeleton` | Feedback |
+| Skip Link | `af-skip-link` | Navigation |
+| Slider | `af-slider` | Data Entry |
+| Spinner | `af-spinner` | Feedback |
+| Switch | `af-switch` | Data Entry |
+| Table | `af-table` | Data Display |
+| Tabs | `af-tabs` | Layout |
+| Textarea | `af-textarea` | Data Entry |
+| Toast | `AfToastService` | Feedback |
+| Toggle Group | `af-toggle-group` | Actions |
+| Toolbar | `af-toolbar` | Actions |
+| Tooltip | `af-tooltip` | Overlays |
 
 ### Services & Pipes
 
-| Export | Description |
+| Export | Beschreibung |
 |--------|-------------|
-| `AfToastService` | Programmatic toast notifications with signal-based state |
-| `AfFormatLabelPipe` | Transforms `snake_case` identifiers to Title Case labels |
-
-## Workspace Structure
-
-```
-projects/
-  angular/          @neuravision/ng-construct (library, built with ng-packagr)
-  demo/             Showcase app for development and visual testing
-```
+| `AfToastService` | Programmatische Toast-Benachrichtigungen |
+| `AfFormatLabelPipe` | Transformiert `snake_case` zu Title Case |
 
 ## Development
 
-### Prerequisites
-
-- **Node.js** with npm 11.7+ (pinned via `packageManager`)
-- **Construct Design System** available at `../design` (linked via `file:` dependency)
-
-### Setup
-
 ```bash
-npm install
+npm install              # Setup
+npm start                # Demo-App (localhost:4200)
+npm run build            # Library + Demo bauen
+ng test                  # Tests (Vitest)
 ```
-
-### Serve Demo App
-
-```bash
-npm start
-```
-
-Opens at [localhost:4200](http://localhost:4200).
-
-### Build
-
-```bash
-npm run build            # Library + Demo (sequential)
-npm run build:angular    # Library only  → dist/angular/
-npm run build:demo       # Demo only     → dist/demo/
-```
-
-> **Note:** The demo depends on the library build output. Always build the library first.
-
-### Test
-
-```bash
-ng test                  # Run all tests (Vitest)
-npx ng test angular      # Run library tests only
-```
-
-### Publish
-
-```bash
-NPM_TOKEN=<token> ./publish.sh
-```
-
-The script builds, runs tests, and publishes `dist/angular/` to npm with `--access public`. Falls back to interactive OTP if no token is provided.
-
-## Tech Stack
-
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Angular | 21 | Component framework |
-| TypeScript | 5.9 | Language |
-| Vitest | 4 | Unit testing |
-| ng-packagr | 21 | Library packaging |
-| Prettier | — | Code formatting (100 chars, single quotes) |

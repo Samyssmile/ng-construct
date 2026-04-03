@@ -1,1 +1,7 @@
-export * from './datepicker.component';
+export {
+  AfDatepickerComponent,
+  AfDatepickerView,
+  AfDatepickerMode,
+  AfDatepickerValueFormat,
+  AfDateRange,
+} from './datepicker.component';
