@@ -21,6 +21,7 @@ export * from './dropdown';
 export * from './pagination';
 export * from './breadcrumbs';
 export * from './datepicker';
+export * from './chip';
 export * from './chip-input';
 export * from './tooltip';
 export * from './badge';
