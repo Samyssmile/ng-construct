@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-04-09
+
 ### Added
 
 - **avatar:** Optional `colorSeed` input on `AfAvatarComponent` for deterministic per-user avatar colors. Pass a stable identifier (userUUID, email, …); the component hashes it locally and binds the resulting palette index to `data-seed-color`, so the same person always renders in the same color across the app. Empty/missing seed leaves the attribute off and the avatar keeps its default background — fully backwards compatible. Pairs with `Samyssmile/construct#85`. ([#22](https://github.com/Samyssmile/ng-construct/issues/22))
