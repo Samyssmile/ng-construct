@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Component, signal } from '@angular/core';
-import { AfAvatarComponent, AfAvatarSize, AfAvatarStatus } from './avatar.component';
+import {
+  AVATAR_SEED_PALETTE_SIZE,
+  AfAvatarComponent,
+  AfAvatarSize,
+  AfAvatarStatus,
+} from './avatar.component';
 
 @Component({
   imports: [AfAvatarComponent],
@@ -10,7 +15,8 @@ import { AfAvatarComponent, AfAvatarSize, AfAvatarStatus } from './avatar.compon
       [name]="name()"
       [size]="size()"
       [alt]="alt()"
-      [status]="status()" />
+      [status]="status()"
+      [colorSeed]="colorSeed()" />
   `,
 })
 class TestHostComponent {
@@ -19,6 +25,7 @@ class TestHostComponent {
   size = signal<AfAvatarSize>('md');
   alt = signal('');
   status = signal<AfAvatarStatus | undefined>(undefined);
+  colorSeed = signal('');
 }
 
 describe('AfAvatarComponent', () => {
@@ -230,6 +237,76 @@ describe('AfAvatarComponent', () => {
       host.alt.set('');
       fixture.detectChanges();
       expect(getAvatar().getAttribute('aria-label')).toBe('Avatar');
+    });
+  });
+
+  describe('seeded colors', () => {
+    it('should not set data-seed-color when colorSeed is empty', () => {
+      expect(getAvatar().hasAttribute('data-seed-color')).toBe(false);
+    });
+
+    it('should set data-seed-color when colorSeed is provided', () => {
+      host.colorSeed.set('user-uuid-1');
+      fixture.detectChanges();
+      expect(getAvatar().hasAttribute('data-seed-color')).toBe(true);
+    });
+
+    it('should produce a 1-indexed integer in palette range', () => {
+      host.colorSeed.set('user-uuid-1');
+      fixture.detectChanges();
+      const value = Number(getAvatar().getAttribute('data-seed-color'));
+      expect(Number.isInteger(value)).toBe(true);
+      expect(value).toBeGreaterThanOrEqual(1);
+      expect(value).toBeLessThanOrEqual(AVATAR_SEED_PALETTE_SIZE);
+    });
+
+    it('should be deterministic — same seed yields the same index', () => {
+      host.colorSeed.set('alice@example.com');
+      fixture.detectChanges();
+      const first = getAvatar().getAttribute('data-seed-color');
+
+      host.colorSeed.set('');
+      fixture.detectChanges();
+      expect(getAvatar().hasAttribute('data-seed-color')).toBe(false);
+
+      host.colorSeed.set('alice@example.com');
+      fixture.detectChanges();
+      expect(getAvatar().getAttribute('data-seed-color')).toBe(first);
+    });
+
+    it('should distribute distinct seeds across multiple palette slots', () => {
+      const seeds = [
+        'alice@example.com',
+        'bob@example.com',
+        'carol@example.com',
+        'dave@example.com',
+        'eve@example.com',
+        'frank@example.com',
+        'grace@example.com',
+        'hank@example.com',
+        '7b3e2a4d-1f1c-4a8e-9b2d-3a91c01dba12',
+        '0f0a1b2c-3d4e-5f60-7180-92a3b4c5d6e7',
+      ];
+      const observed = new Set<string>();
+      for (const seed of seeds) {
+        host.colorSeed.set(seed);
+        fixture.detectChanges();
+        const value = getAvatar().getAttribute('data-seed-color');
+        expect(value).not.toBeNull();
+        observed.add(value!);
+      }
+      // Hash should hit at least half the palette across 10 distinct inputs
+      expect(observed.size).toBeGreaterThanOrEqual(AVATAR_SEED_PALETTE_SIZE / 2);
+    });
+
+    it('should remove the attribute when seed is cleared', () => {
+      host.colorSeed.set('user-uuid-1');
+      fixture.detectChanges();
+      expect(getAvatar().hasAttribute('data-seed-color')).toBe(true);
+
+      host.colorSeed.set('');
+      fixture.detectChanges();
+      expect(getAvatar().hasAttribute('data-seed-color')).toBe(false);
     });
   });
 });

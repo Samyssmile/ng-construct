@@ -5,6 +5,14 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **avatar:** Optional `colorSeed` input on `AfAvatarComponent` for deterministic per-user avatar colors. Pass a stable identifier (userUUID, email, …); the component hashes it locally and binds the resulting palette index to `data-seed-color`, so the same person always renders in the same color across the app. Empty/missing seed leaves the attribute off and the avatar keeps its default background — fully backwards compatible. Pairs with `Samyssmile/construct#85`. ([#22](https://github.com/Samyssmile/ng-construct/issues/22))
+- **avatar:** Exported `AVATAR_SEED_PALETTE_SIZE` constant so consumers can introspect the palette size in sync with the underlying Construct DS.
+- **demo:** New "Team" tab in Settings showcasing seeded avatars across the mock team members.
+
 ## [0.5.0] - 2026-04-03
 
 ### Added

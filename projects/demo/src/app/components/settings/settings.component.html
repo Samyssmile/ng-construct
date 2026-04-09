@@ -46,6 +46,34 @@
     </af-card>
   </af-tab-panel>
 
+  <!-- Team Tab -->
+  <af-tab-panel id="team" label="Team">
+    <af-card>
+      <div body class="settings-form">
+        <h3 class="settings-section-title">Team members</h3>
+        <p class="settings-section-hint">
+          Each member's avatar uses <code>colorSeed</code> bound to their stable id, so the
+          same person always appears in the same color across the app — useful in lists
+          where the eye should pick out repeat individuals at a glance.
+        </p>
+        <ul class="team-list">
+          @for (member of teamMembers(); track member.id) {
+            <li class="team-list__item">
+              <af-avatar
+                size="lg"
+                [name]="member.name"
+                [colorSeed]="member.id" />
+              <div class="team-list__text">
+                <div class="team-list__name">{{ member.name }}</div>
+                <div class="team-list__role">{{ member.role }}</div>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    </af-card>
+  </af-tab-panel>
+
   <!-- Display Tab -->
   <af-tab-panel id="display" label="Display">
     <af-card>

@@ -9,8 +9,10 @@ import {
   AfCheckboxComponent,
   AfToggleGroupComponent, AfToggleItem,
   AfButtonComponent,
+  AfAvatarComponent,
   AfToastService,
 } from '@neuravision/ng-construct';
+import { PmDataService } from '../../services/pm-data.service';
 
 @Component({
   selector: 'app-settings',
@@ -26,12 +28,16 @@ import {
     AfCheckboxComponent,
     AfToggleGroupComponent,
     AfButtonComponent,
+    AfAvatarComponent,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.css',
 })
 export class SettingsComponent {
   private readonly toastService = inject(AfToastService);
+  private readonly dataService = inject(PmDataService);
+
+  readonly teamMembers = this.dataService.teamMembers;
 
   activeTab = 'profile';
 
