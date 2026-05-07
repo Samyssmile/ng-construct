@@ -1,0 +1,143 @@
+<div class="tree-showcase">
+  <header class="tree-showcase__intro">
+    <h1>Tree (af-tree)</h1>
+    <p>
+      Accessible tree view that follows the WAI-ARIA Tree pattern. Use it for
+      org hierarchies, file explorers, category trees, or any nested
+      navigation. Keyboard support is built-in: <kbd>↑</kbd>/<kbd>↓</kbd>
+      moves focus, <kbd>→</kbd>/<kbd>←</kbd> expands or steps in/out,
+      <kbd>Home</kbd>/<kbd>End</kbd> jump, <kbd>Enter</kbd>/<kbd>Space</kbd>
+      activate, <kbd>*</kbd> expands siblings, A–Z performs type-ahead.
+    </p>
+  </header>
+
+  <!-- ── Story 1: Whitelabel org tree with selection + filter ── -->
+  <section class="tree-showcase__section">
+    <af-card>
+      <h2>Whitelabel org hierarchy</h2>
+      <p class="tree-showcase__lead">
+        Single selection, indent guides, custom slot content (badge per
+        customer-type) and a search filter that auto-expands matched paths.
+      </p>
+
+      <div class="tree-showcase__controls">
+        <af-input
+          type="search"
+          label="Search organizations"
+          placeholder="Type to filter…"
+          [ngModel]="orgFilter()"
+          (ngModelChange)="orgFilter.set($event)" />
+      </div>
+
+      <af-tree
+        ariaLabel="Organizations"
+        [nodes]="orgs()"
+        [showIndentGuides]="true"
+        selection="single"
+        [filter]="orgFilter()"
+        [(expandedIds)]="expandedOrgIds"
+        [(selectedIds)]="selectedOrgIds"
+        (nodeActivate)="lastActivated.set($event)">
+        <ng-template #nodeContent let-node>
+          <span class="ct-tree__label" [innerHTML]="highlightLabel(node.label)"></span>
+          <af-badge [variant]="badgeVariant(node.data.customerType)">
+            {{ node.data.customerType }}
+          </af-badge>
+          <span class="tree-showcase__billing">{{ node.data.billingId }}</span>
+        </ng-template>
+
+        <ng-template #nodeWarning let-node>
+          @if (node.meta?.orphan) {
+            <af-icon size="sm" ariaLabel="Parent missing">
+              <svg lucideTriangleAlert></svg>
+            </af-icon>
+          }
+        </ng-template>
+
+        <ng-template #nodeActions let-node>
+          @if (
+            node.data?.customerType === 'whitelabel' ||
+            node.data?.customerType === 'whitelabel-sub' ||
+            node.data?.customerType === 'platform-operator'
+          ) {
+            <af-button
+              size="sm"
+              variant="ghost"
+              [iconOnly]="true"
+              ariaLabel="Add sub-organization"
+              (clicked)="addSub(node); $event.stopPropagation()">
+              <af-icon size="sm">
+                <svg lucidePlus></svg>
+              </af-icon>
+            </af-button>
+          }
+        </ng-template>
+      </af-tree>
+
+      <dl class="tree-showcase__meta">
+        <dt>Selected</dt>
+        <dd>{{ selectedOrgLabel() }}</dd>
+        <dt>Last activated</dt>
+        <dd>{{ lastActivated()?.label ?? '—' }}</dd>
+      </dl>
+    </af-card>
+  </section>
+
+  <!-- ── Story 2: Async lazy-load file tree ── -->
+  <section class="tree-showcase__section">
+    <af-card>
+      <h2>Async lazy-load</h2>
+      <p class="tree-showcase__lead">
+        First expand of a node with <code>children: undefined</code> emits
+        <code>loadChildren</code>; the host marks the node as
+        <code>loading</code> (which shows <code>aria-busy</code>) and patches
+        children in once they arrive.
+      </p>
+
+      <div class="tree-showcase__controls">
+        <af-button size="sm" variant="ghost" (clicked)="resetLazy()">
+          <af-icon size="sm">
+            <svg lucideRefreshCw></svg>
+          </af-icon>
+          Reset
+        </af-button>
+      </div>
+
+      <af-tree
+        ariaLabel="Project files"
+        [nodes]="files()"
+        [showIndentGuides]="true"
+        (loadChildren)="onLoad($event)" />
+
+      @if (loadEvents().length > 0) {
+        <p class="tree-showcase__events">
+          Events: {{ loadEvents().join(' · ') }}
+        </p>
+      }
+    </af-card>
+  </section>
+
+  <!-- ── Story 3: Multi-selection + dense ── -->
+  <section class="tree-showcase__section">
+    <af-card>
+      <h2>Multi-selection (dense)</h2>
+      <p class="tree-showcase__lead">
+        <kbd>Space</kbd> toggles selection on each node; <kbd>Enter</kbd>
+        activates without changing selection. The dense modifier reduces row
+        height for high-density admin tables.
+      </p>
+
+      <af-tree
+        ariaLabel="Organizations (multi-select)"
+        [nodes]="orgs()"
+        [dense]="true"
+        [showIndentGuides]="true"
+        selection="multiple"
+        [(selectedIds)]="checkSelections" />
+
+      <p class="tree-showcase__meta">
+        <strong>{{ checkSelections().size }}</strong> selected
+      </p>
+    </af-card>
+  </section>
+</div>

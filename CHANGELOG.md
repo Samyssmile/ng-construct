@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-05-07
+
+## [0.6.0] - 2026-05-07
+
+### Added
+
+- **tree:** New `AfTreeComponent` (`af-tree`) implementing the WAI-ARIA Tree View pattern over the Construct `ct-tree` CSS component. Signal-based, OnPush, generic over the node payload. Supports n-level nesting, single/multi selection, async lazy-load (`loadChildren`), client-side substring filtering with auto-expand and `<mark>` highlighting, content slots (`nodeContent`, `nodeActions`, `nodeWarning`, `empty`), and configurable i18n via `AF_TREE_I18N`. Full keyboard pattern (↑/↓/←/→/Home/End/Enter/Space/`*` and A–Z type-ahead) on a roving tabindex anchored to each `<li role="treeitem">`. Includes `AfTreeHarness` and `AfTreeNodeHarness` test helpers, 26 specs (axe-core a11y verified), Storybook stories and a `Tree` showcase view in the demo app. ([#23](https://github.com/Samyssmile/ng-construct/issues/23))
+- **construct:** Bumped peer dependency `@neuravision/construct` to `^1.2.0` (ships `tree.css`).
+
 ## [0.5.1] - 2026-04-09
 
 ### Added

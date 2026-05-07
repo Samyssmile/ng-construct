@@ -1,13 +1,13 @@
 {
   "name": "@neuravision/ng-construct",
-  "version": "0.5.1",
+  "version": "0.7.0",
   "description": "Angular components for the Construct Design System",
   "keywords": ["angular", "components", "design-system", "construct"],
   "peerDependencies": {
     "@angular/common": "^21.1.0",
     "@angular/core": "^21.1.0",
     "@angular/router": "^21.1.0",
-    "@neuravision/construct": "^1.1.4",
+    "@neuravision/construct": "^1.2.0",
     "@lucide/angular": "^1.0.0-rc.0"
   },
   "dependencies": {

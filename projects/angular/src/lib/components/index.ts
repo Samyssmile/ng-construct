@@ -45,3 +45,4 @@ export * from './skeleton';
 export * from './divider';
 export * from './field';
 export * from './table';
+export * from './tree';

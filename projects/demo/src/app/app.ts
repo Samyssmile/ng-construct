@@ -30,8 +30,9 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { TasksComponent } from './components/tasks/tasks.component';
 import { CreateTaskModalComponent } from './components/create-task-modal/create-task-modal.component';
 import { SettingsComponent } from './components/settings/settings.component';
+import { TreeShowcaseComponent } from './components/tree-showcase/tree-showcase.component';
 
-type AppView = 'dashboard' | 'tasks' | 'settings';
+type AppView = 'dashboard' | 'tasks' | 'tree' | 'settings';
 
 @Component({
   selector: 'app-root',
@@ -61,6 +62,7 @@ type AppView = 'dashboard' | 'tasks' | 'settings';
     TasksComponent,
     CreateTaskModalComponent,
     SettingsComponent,
+    TreeShowcaseComponent,
   ],
   templateUrl: './app.html',
   styleUrl: './app.css',
@@ -81,6 +83,7 @@ export class App {
     const viewLabels: Record<AppView, string> = {
       dashboard: 'Dashboard',
       tasks: 'Tasks',
+      tree: 'Tree',
       settings: 'Settings',
     };
     const crumbs: AfBreadcrumb[] = [base, { label: viewLabels[view] }];
