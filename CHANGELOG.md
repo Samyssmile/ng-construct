@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-06-05
+
+### Changed
+
+- **peer-deps:** Widened the `@angular/*` peer dependency range to `^21.1.0 || ^22.0.0` so the library can be consumed from Angular 22 projects. The library uses only stable Angular APIs (signals, `input()`/`output()`, `computed()`, `ControlValueAccessor`); no source changes were required. Angular 21 remains supported.
+
 ## [0.7.0] - 2026-05-07
 
 ## [0.6.0] - 2026-05-07
