@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Shared foundation: `AfChartDataTableComponent`, `AF_CHART_I18N`, the `AfChartSeries` / `AfChartDatum` / `AfGaugeThreshold` data contracts, the SSR-safe `chart-geometry` helpers, and a component test harness per chart. 93 new specs (axe-core verified) and Storybook stories under `Angular/Charts/*`.
 - **construct:** Bumped peer dependency `@neuravision/construct` to `^1.3.0` (ships `chart.css` and the `--color-chart-series-*` palette tokens required by the charts).
 
+### Fixed
+
+- **bar-chart:** The value axis now always includes the zero baseline. Previously a chart whose every value (grouped) — or every stack total (stacked) — was negative produced a domain that excluded `0`, so bars were drawn from an off-canvas origin and, with `overflow: visible`, leaked over the toolbar/legend. The domain now reaches `max(0, …)`/`min(0, …)`, and stacked layouts use the smallest *negative stack total* rather than the smallest single value, keeping every bar on-canvas.
+- **gauge:** `aria-valuenow` is now clamped into `[min, max]` as the WAI-ARIA `meter` role requires (an out-of-range `value` previously exposed `aria-valuenow > aria-valuemax`); `aria-valuetext` keeps the raw value so assistive tech still announces e.g. `"150%"`.
+- **gauge:** The `strokeWidth` input now drives the rendered arc thickness via the `--ct-chart-gauge-width` custom property. It was previously bound as an SVG presentation attribute that the `ct-chart` class selector overrode, so the input changed only the arc radius — desyncing the geometry from the (fixed 14px) stroke.
+
 ## [0.8.0] - 2026-06-05
 
 ### Changed

@@ -81,9 +81,10 @@ interface GaugePlot {
   template: `
     <div
       class="ct-chart"
+      [style.--ct-chart-gauge-width]="gaugeWidth()"
       [attr.role]="isEmpty() ? null : 'meter'"
       [attr.aria-label]="isEmpty() ? null : ariaLabel()"
-      [attr.aria-valuenow]="isEmpty() ? null : value()"
+      [attr.aria-valuenow]="isEmpty() ? null : clampedValue()"
       [attr.aria-valuemin]="isEmpty() ? null : min()"
       [attr.aria-valuemax]="isEmpty() ? null : max()"
       [attr.aria-valuetext]="isEmpty() ? null : valueDisplay()">
@@ -97,15 +98,9 @@ interface GaugePlot {
             preserveAspectRatio="xMidYMid meet"
             aria-hidden="true"
             focusable="false">
-            <path
-              class="ct-chart__gauge-track"
-              [attr.d]="plot().track"
-              [attr.stroke-width]="strokeWidth()" />
+            <path class="ct-chart__gauge-track" [attr.d]="plot().track" />
             @if (plot().value) {
-              <path
-                [class]="valueClass()"
-                [attr.d]="plot().value"
-                [attr.stroke-width]="strokeWidth()" />
+              <path [class]="valueClass()" [attr.d]="plot().value" />
             }
             @if (showValue()) {
               <text
@@ -138,7 +133,10 @@ export class AfGaugeComponent {
 
   /** Accessible label for the gauge (required by the WAI-ARIA `meter` role). */
   ariaLabel = input.required<string>();
-  /** The metric value; clamped into `[min, max]` for drawing the arc. */
+  /**
+   * The metric value. Clamped into `[min, max]` for the drawn arc and
+   * `aria-valuenow`; `aria-valuetext` reports the raw value unchanged.
+   */
   value = input.required<number>();
   /** Lower bound of the gauge scale. */
   min = input(0);
@@ -157,7 +155,7 @@ export class AfGaugeComponent {
   valueText = input('');
   /** Small caption rendered beneath the value (e.g. the metric name). */
   caption = input('');
-  /** Arc thickness in viewBox units (the design CSS sets no default width). */
+  /** Arc thickness in viewBox units; drives both the arc radius and the rendered stroke. */
   strokeWidth = input(14);
   /** Render the centre value (and caption) text. */
   showValue = input(true, { transform: booleanAttribute });
@@ -177,6 +175,16 @@ export class AfGaugeComponent {
   protected readonly valueDisplay = computed(
     () => this.valueText() || formatNumber(this.value(), this.locale(), this.valueFormat()),
   );
+
+  /**
+   * `value` clamped into `[min, max]` for `aria-valuenow`. The WAI-ARIA `meter`
+   * role requires `valuenow ∈ [valuemin, valuemax]`; `aria-valuetext` keeps the
+   * raw reading so assistive tech still announces an out-of-range value verbatim.
+   */
+  protected readonly clampedValue = computed(() => clamp(this.value(), this.min(), this.max()));
+
+  /** Arc thickness as a CSS length, fed to the `--ct-chart-gauge-width` token. */
+  protected readonly gaugeWidth = computed(() => `${this.strokeWidth()}px`);
 
   /**
    * Resolved status bucket: the highest threshold band whose `from <= value`,

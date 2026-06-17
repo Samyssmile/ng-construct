@@ -19,6 +19,7 @@ import { checkA11y } from '../../testing/axe-helper';
       [shape]="shape()"
       [valueText]="valueText()"
       [caption]="caption()"
+      [strokeWidth]="strokeWidth()"
       [showValue]="showValue()" />
   `,
 })
@@ -32,6 +33,7 @@ class HostComponent {
   shape = signal<'ring' | 'semi'>('ring');
   valueText = signal('82%');
   caption = signal('');
+  strokeWidth = signal(14);
   showValue = signal(true);
 }
 
@@ -81,6 +83,23 @@ describe('AfGaugeComponent', () => {
       expect(harness.getCenterText()).toBeNull();
       expect(harness.getAriaValueText()).toBe('82%');
     });
+
+    it('clamps aria-valuenow into [min,max] but keeps aria-valuetext truthful (above max)', () => {
+      const { fixture, host, harness } = setup();
+      host.valueText.set('');
+      host.value.set(150);
+      fixture.detectChanges();
+      // WAI-ARIA requires valuenow ∈ [valuemin, valuemax]; valuetext stays raw.
+      expect(harness.getAriaValueNow()).toBe('100');
+      expect(harness.getAriaValueText()).toBe('150');
+    });
+
+    it('clamps aria-valuenow at the minimum for below-range values', () => {
+      const { fixture, host, harness } = setup();
+      host.value.set(-20);
+      fixture.detectChanges();
+      expect(harness.getAriaValueNow()).toBe('0');
+    });
   });
 
   describe('value arc', () => {
@@ -120,10 +139,14 @@ describe('AfGaugeComponent', () => {
       expect(harness.getTrackPath()).not.toBeNull();
     });
 
-    it('binds the stroke width to both arcs', () => {
-      const { harness } = setup();
-      expect(harness.getTrackPath()?.getAttribute('stroke-width')).toBe('14');
-      expect(harness.getValuePath()?.getAttribute('stroke-width')).toBe('14');
+    it('drives arc thickness through the --ct-chart-gauge-width custom property', () => {
+      const { fixture, host, harness } = setup();
+      expect(harness.getGaugeWidth()).toBe('14px');
+      host.strokeWidth.set(24);
+      fixture.detectChanges();
+      // The input now flows to the CSS variable the design layer reads, instead
+      // of a presentation attribute the class selector would override.
+      expect(harness.getGaugeWidth()).toBe('24px');
     });
   });
 

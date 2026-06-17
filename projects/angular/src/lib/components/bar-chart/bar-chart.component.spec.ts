@@ -83,6 +83,43 @@ describe('AfBarChartComponent', () => {
       expect(downY).toBeGreaterThan(upY);
     });
 
+    it('keeps the zero baseline on-canvas when every value is negative', () => {
+      const { fixture, host, harness } = setup();
+      host.series.set([{ name: 'Net', values: [-5, -10, -3] }]);
+      fixture.detectChanges();
+      const ticks = harness.getValueTickLabels().map(Number);
+      // Zero stays the top of the domain — no positive overshoot, baseline visible.
+      expect(ticks).toContain(0);
+      expect(Math.max(...ticks)).toBe(0);
+      // Every bar stays inside the 280-unit viewBox (no overflow past the top edge).
+      for (const bar of harness.getBars()) {
+        const y = Number(bar.getAttribute('y'));
+        const h = Number(bar.getAttribute('height'));
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y + h).toBeLessThanOrEqual(280);
+      }
+    });
+
+    it('extends the domain to the full negative stack total when stacked', () => {
+      const { fixture, host, harness } = setup();
+      host.categories.set(['Q1']);
+      host.series.set([
+        { name: 'A', values: [-5] },
+        { name: 'B', values: [-10] },
+      ]);
+      host.layout.set('stacked');
+      fixture.detectChanges();
+      const ticks = harness.getValueTickLabels().map(Number);
+      // The stack reaches -15, so the axis minimum must reach it too (was -10 before).
+      expect(Math.min(...ticks)).toBeLessThanOrEqual(-15);
+      expect(ticks).toContain(0);
+      for (const bar of harness.getBars()) {
+        const y = Number(bar.getAttribute('y'));
+        const h = Number(bar.getAttribute('height'));
+        expect(y + h).toBeLessThanOrEqual(280);
+      }
+    });
+
     it('renders nice, ascending value-axis tick labels', () => {
       const { harness } = setup();
       const ticks = harness.getValueTickLabels().map(Number);

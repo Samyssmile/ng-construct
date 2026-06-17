@@ -394,21 +394,32 @@ export class AfBarChartComponent {
     const dataMin = allValues.length ? Math.min(...allValues) : 0;
     const dataMax = allValues.length ? Math.max(...allValues) : 1;
 
+    // Stacked bars accumulate positive and negative values into separate stacks,
+    // so the axis must reach the largest positive stack *and* the smallest
+    // negative stack — not just the largest/smallest single value.
     let maxStackTotal = dataMax;
+    let minStackTotal = dataMin;
     if (stacked) {
       maxStackTotal = 0;
+      minStackTotal = 0;
       for (let i = 0; i < categoryCount; i++) {
-        let total = 0;
+        let pos = 0;
+        let neg = 0;
         for (const s of series) {
           const v = s.values[i];
-          if (v != null && v > 0) total += v;
+          if (v == null) continue;
+          if (v > 0) pos += v;
+          else neg += v;
         }
-        if (total > maxStackTotal) maxStackTotal = total;
+        if (pos > maxStackTotal) maxStackTotal = pos;
+        if (neg < minStackTotal) minStackTotal = neg;
       }
     }
 
-    const rawMin = Math.min(0, dataMin);
-    const rawMax = this.valueMax() ?? (stacked ? maxStackTotal : dataMax);
+    // The value axis always includes the zero baseline so bars grow from an
+    // on-canvas origin — even when every value (or stack total) is negative.
+    const rawMin = Math.min(0, stacked ? minStackTotal : dataMin);
+    const rawMax = this.valueMax() ?? Math.max(0, stacked ? maxStackTotal : dataMax);
     return niceScale(rawMin, rawMax, 5);
   }
 

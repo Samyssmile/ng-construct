@@ -59,6 +59,14 @@ export class AfGaugeHarness {
     return this.hostEl.querySelector('svg.ct-chart__svg');
   }
 
+  /**
+   * Returns the `--ct-chart-gauge-width` custom property (e.g. `'14px'`) that
+   * drives the rendered arc thickness, or null when unset.
+   */
+  getGaugeWidth(): string | null {
+    return this.getRoot()?.style.getPropertyValue('--ct-chart-gauge-width').trim() || null;
+  }
+
   /** Returns the track arc `<path>`. */
   getTrackPath(): SVGPathElement | null {
     return this.hostEl.querySelector('path.ct-chart__gauge-track');
