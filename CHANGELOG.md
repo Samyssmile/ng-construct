@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **charts:** New SVG chart family wrapping the Construct `ct-chart` styling layer — the foundation the data dashboard work depends on. All components are standalone, OnPush, signal-based, SSR-safe (no DOM/`window`/`Date`), and accessible: every chart exposes `role="img"` + a descriptive `aria-label` and an always-present, visually-hidden data-table fallback (toggleable) so information is never conveyed by colour alone (WCAG 1.4.1); series colours come from the contrast-checked `--color-chart-series-*` tokens, and all strings are configurable via `AF_CHART_I18N`.
+  - `AfLineChartComponent` (`af-line-chart`) — line / area, multi-series, nice axis ticks, null-gap handling.
+  - `AfBarChartComponent` (`af-bar-chart`) — grouped & stacked, vertical & horizontal, gap-free histogram mode.
+  - `AfDonutChartComponent` (`af-donut-chart`) — donut / pie with centre label and per-slice percentages.
+  - `AfSparklineComponent` (`af-sparkline`) — compact inline trend line for KPI tiles.
+  - `AfGaugeComponent` (`af-gauge`) — ring / semi gauge using the WAI-ARIA `meter` role with threshold-driven status colours.
+  - Shared foundation: `AfChartDataTableComponent`, `AF_CHART_I18N`, the `AfChartSeries` / `AfChartDatum` / `AfGaugeThreshold` data contracts, the SSR-safe `chart-geometry` helpers, and a component test harness per chart. 93 new specs (axe-core verified) and Storybook stories under `Angular/Charts/*`.
+- **construct:** Bumped peer dependency `@neuravision/construct` to `^1.3.0` (ships `chart.css` and the `--color-chart-series-*` palette tokens required by the charts).
+
 ## [0.8.0] - 2026-06-05
 
 ### Changed
