@@ -5,6 +5,30 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-06-23
+
+### Added
+
+- **autocomplete:** New `AfAutocompleteComponent` (`af-autocomplete`) — an accessible async/remote
+  autocomplete (typeahead) following the WAI-ARIA 1.2 combobox-with-listbox pattern. Unlike
+  `AfCombobox` (which owns a static option list and filters it by label substring), this component is
+  **external-filter only**: the consumer fetches and filters, then feeds the resolved results in via
+  `options` and toggles `loading`. This makes it suitable for remote search across multiple sources,
+  where a hit may have matched on a field that is not part of its visible label (e.g. a user matched
+  by e-mail) — such hits would be wrongly dropped by `AfCombobox`'s internal substring filter.
+  - Emits a selection **event** (`optionSelected`) instead of binding a value, so the same box can
+    drive an action (apply a filter, navigate) while keeping the free text.
+  - Option **groups** with headings (`group` key + `groupLabels`/`groupOrder`), a **loading** row, an
+    **empty** row, and rich rows via the `*afAutocompleteOption` template directive.
+  - Full keyboard support (Arrow/Home/End/Enter/Escape/Tab) using the WAI-ARIA manual-selection
+    pattern — nothing is highlighted until the user navigates, so a free-text Enter never hijacks
+    into a selection. Screen-reader announcements via a polite live region.
+  - `hideOnEmpty` keeps the panel closed (rather than showing the empty row) while there are no
+    options and no fetch is in flight — for boxes that also drive a live side effect (e.g. a text
+    filter) so an empty suggestion list stays silent.
+  - Standalone, OnPush, signal-based, SSR-safe; ships its own scoped styles built on the Construct
+    control/`--ct-*` tokens. 21 new specs, axe-core verified.
+
 ## [0.9.0] - 2026-06-17
 
 ### Added

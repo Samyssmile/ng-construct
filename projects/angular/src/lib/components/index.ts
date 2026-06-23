@@ -34,6 +34,7 @@ export * from './icon';
 export * from './slider';
 export * from './drawer';
 export * from './combobox';
+export * from './autocomplete';
 export * from './file-upload';
 export * from './select-menu';
 export * from './navbar';
