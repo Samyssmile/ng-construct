@@ -16,5 +16,5 @@
 }
 
 .ct-data-table__table tr:hover {
-  background-color: var(--color-neutral-50);
+  background-color: var(--color-bg-muted);
 }

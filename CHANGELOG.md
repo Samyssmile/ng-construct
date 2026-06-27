@@ -5,6 +5,25 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2026-06-27
+
+### Changed
+
+- **deps:** Upgrade the `@neuravision/construct` peer dependency to **`^2.0.0`** (was `^1.3.0`).
+  Construct 2.0.0 is a new visual identity ("engineered for everyone") whose breaking changes —
+  the `slate` → `stone` neutral primitive rename, the switch to the **Manrope** typeface, and the
+  retuned state ramps plus the orange "datum" accent — all live in Construct's primitive/foundation
+  layer and are carried automatically through `foundations.css` / `components.css`. The wrapper
+  consumes only **semantic** tokens (`--color-bg-muted`, `--color-text-muted`, `--color-brand-primary`,
+  `--color-chart-series-*`, …) and `ct-` classes, so no component required migration. Consumers must
+  upgrade their installed `@neuravision/construct` to 2.x.
+
+### Fixed
+
+- **data-table:** Row-hover background now uses the canonical `--color-bg-muted` token (matching
+  Construct's own `table.css` `tr:hover`) instead of the non-existent `--color-neutral-50`, which had
+  never resolved. The hover affordance is now theme-aware across light, dark, and high-contrast.
+
 ## [0.10.0] - 2026-06-23
 
 ### Added
