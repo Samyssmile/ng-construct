@@ -9,9 +9,8 @@ Angular workspace for the **Construct Design System**. Contains two projects:
 - **`projects/angular`** — `@neuravision/ng-construct` component library (built with ng-packagr)
 - **`projects/demo`** — Demo/showcase app consuming the library
 
-The library wraps the CSS-based design system `@neuravision/construct` (linked locally from `../design`) into Angular components.
+The library wraps the CSS-based design system [`@neuravision/construct`](https://github.com/Samyssmile/construct) into Angular components. During local development it is linked from a sibling `../design` checkout.
 
-Location of Construct Design System: `/home/caedmon/work/accessful/frontend/design`
 ## Commands
 
 ```bash

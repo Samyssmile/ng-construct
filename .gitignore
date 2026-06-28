@@ -41,3 +41,25 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor / AI assistant working files
+.claude/
+
+# Internal / private documentation (not for public repo)
+AGENTS.md
+PLAN.md
+overview.md
+issue.md
+showcase-findings.md
+analyze.md
+finding-*.md
+mock-data/

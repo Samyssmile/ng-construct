@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Live Storybook & Docs
+    url: https://samyssmile.github.io/construct/
+    about: Browse every component, token, and accessibility note interactively.
+  - name: 💬 Discussions
+    url: https://github.com/Samyssmile/ng-construct/discussions
+    about: Ask questions, share ideas, and get help from the community.
+  - name: 🧱 Construct (design system)
+    url: https://github.com/Samyssmile/construct
+    about: Issues about the underlying CSS / tokens belong in the Construct repo.
