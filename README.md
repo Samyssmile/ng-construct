@@ -8,6 +8,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@neuravision/ng-construct?color=F4581C&label=npm&logo=npm)](https://www.npmjs.com/package/@neuravision/ng-construct)
 [![npm downloads](https://img.shields.io/npm/dm/@neuravision/ng-construct?color=F4581C)](https://www.npmjs.com/package/@neuravision/ng-construct)
+[![CI](https://github.com/Samyssmile/ng-construct/actions/workflows/ci.yml/badge.svg)](https://github.com/Samyssmile/ng-construct/actions/workflows/ci.yml)
 [![Angular](https://img.shields.io/badge/Angular-21_%7C_22-DD0031?logo=angular&logoColor=white)](https://angular.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![WCAG 2.1 AA](https://img.shields.io/badge/WCAG_2.1-AA-2ea44f)](https://samyssmile.github.io/construct/)

@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  # Allow manual re-runs from the Actions tab.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build library (production)
+        run: npx ng build angular --configuration production
+
+      - name: Test library
+        run: npx ng test angular --watch=false
+
+      # Idempotent + tolerant: skips cleanly when the NPM_TOKEN secret is
+      # missing or the version is already on npm, instead of failing the run.
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::notice::NPM_TOKEN secret is not set — skipping npm publish. Add it under Settings → Secrets and variables → Actions to enable automated publishing."
+            exit 0
+          fi
+          cd dist/angular
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "::notice::${NAME}@${VERSION} is already published — skipping."
+            exit 0
+          fi
+          echo "Publishing ${NAME}@${VERSION}…"
+          npm publish --access public
