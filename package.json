@@ -44,7 +44,7 @@
     "axe-core": "^4.11.2",
     "jsdom": "^27.1.0",
     "ng-packagr": "^21.1.0",
-    "typescript": "~5.9.2",
+    "typescript": "~6.0.3",
     "vitest": "^4.0.8"
   }
 }
