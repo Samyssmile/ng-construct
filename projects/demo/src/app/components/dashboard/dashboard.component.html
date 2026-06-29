@@ -32,7 +32,10 @@
 
   <af-card>
     <div body class="metric-card">
-      <div class="metric-card__icon metric-card__icon--info" afTooltip="Tasks currently in progress">
+      <div
+        class="metric-card__icon metric-card__icon--info"
+        afTooltip="Tasks currently in progress"
+      >
         <af-icon size="lg">
           <svg lucideClock></svg>
         </af-icon>
@@ -46,7 +49,10 @@
 
   <af-card>
     <div body class="metric-card">
-      <div class="metric-card__icon metric-card__icon--danger" afTooltip="Tasks past their due date">
+      <div
+        class="metric-card__icon metric-card__icon--danger"
+        afTooltip="Tasks past their due date"
+      >
         <af-icon size="lg">
           <svg lucideTriangleAlert></svg>
         </af-icon>
@@ -54,6 +60,82 @@
       <div class="metric-card__content">
         <span class="metric-card__value">{{ overdueTasks() }}</span>
         <span class="metric-card__label">Overdue</span>
+      </div>
+    </div>
+  </af-card>
+</div>
+
+<!-- Analytics -->
+<div class="analytics-grid">
+  <af-card>
+    <div header>
+      <h3>Completion Rate</h3>
+    </div>
+    <div body>
+      <af-gauge
+        ariaLabel="Overall completion rate"
+        shape="semi"
+        caption="Completed"
+        [value]="completionRate()"
+        [valueText]="completionRate() + '%'"
+        [thresholds]="completionThresholds"
+      />
+    </div>
+  </af-card>
+
+  <af-card>
+    <div header>
+      <h3>Tasks by Status</h3>
+    </div>
+    <div body>
+      <af-donut-chart ariaLabel="Tasks by status" centerLabel="Total" [data]="statusBreakdown()" />
+    </div>
+  </af-card>
+
+  <af-card>
+    <div header>
+      <h3>Workload by Project</h3>
+    </div>
+    <div body>
+      <af-bar-chart
+        ariaLabel="Completed and open tasks per project"
+        layout="stacked"
+        [categories]="workload().categories"
+        [series]="workload().series"
+      />
+    </div>
+  </af-card>
+
+  <af-card>
+    <div header>
+      <h3>Completion Trend</h3>
+    </div>
+    <div body>
+      <af-line-chart
+        ariaLabel="Cumulative completed tasks over time"
+        [area]="true"
+        [categories]="completionTrend().categories"
+        [series]="completionTrend().series"
+      />
+    </div>
+  </af-card>
+
+  <af-card>
+    <div header>
+      <h3>Weekly Intake</h3>
+    </div>
+    <div body>
+      <div class="spark-tile">
+        <span class="spark-tile__value">{{ totalTasks() }}</span>
+        <span class="spark-tile__label">tasks created</span>
+        <af-sparkline
+          class="spark-tile__chart"
+          ariaLabel="New tasks per week"
+          [values]="weeklyIntake()"
+          [area]="true"
+          [width]="220"
+          [height]="48"
+        />
       </div>
     </div>
   </af-card>
@@ -70,20 +152,31 @@
         <div class="project-row__info">
           <af-icon size="sm">
             @switch (project.icon) {
-              @case ('rocket') { <svg lucideRocket></svg> }
-              @case ('flask-conical') { <svg lucideFlaskConical></svg> }
-              @case ('monitor') { <svg lucideMonitor></svg> }
-              @case ('cloud') { <svg lucideCloud></svg> }
+              @case ('rocket') {
+                <svg lucideRocket></svg>
+              }
+              @case ('flask-conical') {
+                <svg lucideFlaskConical></svg>
+              }
+              @case ('monitor') {
+                <svg lucideMonitor></svg>
+              }
+              @case ('cloud') {
+                <svg lucideCloud></svg>
+              }
             }
           </af-icon>
           <span class="project-row__name">{{ project.name }}</span>
-          <span class="project-row__count">{{ project.completedCount }}/{{ project.taskCount }}</span>
+          <span class="project-row__count"
+            >{{ project.completedCount }}/{{ project.taskCount }}</span
+          >
         </div>
         <af-progress-bar
           [value]="project.progress"
           [variant]="getProgressVariant(project.progress)"
           size="sm"
-          [label]="project.name + ' progress'" />
+          [label]="project.name + ' progress'"
+        />
       </div>
     }
   </div>
@@ -99,8 +192,8 @@
       [data]="recentTasks()"
       [columns]="recentColumns"
       [config]="{ striped: true, compact: true }"
-      rowId="id">
-
+      rowId="id"
+    >
       <ng-template afCellDef="status" let-row>
         <af-badge [variant]="getStatusVariant(row.status)">
           {{ row.status | afFormatLabel }}
@@ -118,7 +211,8 @@
       <af-pagination
         [currentPage]="recentTasksPage()"
         [totalPages]="totalRecentPages()"
-        (pageChange)="onRecentPageChange($event)" />
+        (pageChange)="onRecentPageChange($event)"
+      />
     </div>
   </div>
 </af-card>

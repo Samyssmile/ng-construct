@@ -78,8 +78,8 @@ let nextBarChartUid = 0;
 
 const VIEW_WIDTH = 640;
 const MARGIN = { top: 12, right: 16, bottom: 28, left: 48 };
-/** Wider left gutter in horizontal mode to fit right-aligned category labels. */
-const HORIZONTAL_LEFT = 96;
+/** Wider left gutter in horizontal mode to fit right-aligned category labels (~18 chars at xs font). */
+const HORIZONTAL_LEFT = 130;
 /** Fraction of each category band reserved as padding (grouped/stacked, non-histogram). */
 const BAND_PADDING = 0.2;
 
@@ -151,6 +151,14 @@ const BAND_PADDING = 0.2;
             preserveAspectRatio="xMidYMid meet"
             role="img"
             [attr.aria-label]="svgAriaLabel()">
+            @if (isHorizontal()) {
+              <defs>
+                <clipPath [id]="labelClipId">
+                  <rect x="0" y="0" [attr.width]="130" [attr.height]="height()" />
+                </clipPath>
+              </defs>
+            }
+
             <g class="ct-chart__value-ticks">
               @for (tick of plot().valueTicks; track tick.value) {
                 <line
@@ -177,7 +185,8 @@ const BAND_PADDING = 0.2;
               [attr.x2]="plot().axisLine.x2"
               [attr.y2]="plot().axisLine.y2" />
 
-            <g class="ct-chart__category-labels">
+            <g class="ct-chart__category-labels"
+               [attr.clip-path]="isHorizontal() ? 'url(#' + labelClipId + ')' : null">
               @for (label of plot().categoryLabels; track $index) {
                 <text
                   class="ct-chart__tick-label"
@@ -230,6 +239,8 @@ const BAND_PADDING = 0.2;
 export class AfBarChartComponent {
   protected readonly i18n = inject(AF_CHART_I18N);
   protected readonly tableId = `af-bar-chart-${nextBarChartUid++}`;
+  protected readonly labelClipId = `af-bar-chart-clip-${nextBarChartUid - 1}`;
+  protected readonly isHorizontal = computed(() => this.orientation() === 'horizontal');
 
   /** Accessible chart label (required by the WAI-ARIA `img` role). */
   ariaLabel = input.required<string>();

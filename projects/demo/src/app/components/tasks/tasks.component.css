@@ -18,7 +18,8 @@
   flex-wrap: wrap;
 }
 
-.tasks-filters af-input {
+.tasks-filters af-autocomplete {
+  flex: 0 1 320px;
   min-width: 240px;
 }
 

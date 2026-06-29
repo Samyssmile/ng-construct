@@ -1,35 +1,42 @@
-import { Component, ChangeDetectionStrategy, inject, input, output, signal, computed } from '@angular/core';
 import {
-  AfToggleGroupComponent, AfToggleItem,
-  AfInputComponent,
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  input,
+  output,
+  signal,
+  computed,
+} from '@angular/core';
+import {
+  AfToggleGroupComponent,
+  AfToggleItem,
+  AfAutocompleteComponent,
+  AfAutocompleteOption,
   AfIconComponent,
-  AfDataTableComponent, AfColumn, AfDataRow, AfCellDefDirective, AfSortState,
+  AfDataTableComponent,
+  AfColumn,
+  AfDataRow,
+  AfCellDefDirective,
+  AfSortState,
   AfPaginationComponent,
-  AfDropdownComponent, AfDropdownItem,
+  AfDropdownComponent,
+  AfDropdownItem,
   AfBadgeComponent,
   AfSpinnerComponent,
+  AfEmptyStateComponent,
   AfButtonComponent,
   AfFormatLabelPipe,
   AfToastService,
 } from '@neuravision/ng-construct';
-import {
-  LucidePlus,
-  LucideSearch,
-  LucideBug,
-  LucideZap,
-  LucideWrench,
-  LucideSquareCheck,
-} from '@lucide/angular';
-import { FormsModule } from '@angular/forms';
+import { LucidePlus, LucideBug, LucideZap, LucideWrench, LucideSquareCheck } from '@lucide/angular';
 import { PmDataService } from '../../services/pm-data.service';
 
 @Component({
   selector: 'app-tasks',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    FormsModule,
     AfToggleGroupComponent,
-    AfInputComponent,
+    AfAutocompleteComponent,
     AfIconComponent,
     AfDataTableComponent,
     AfCellDefDirective,
@@ -37,10 +44,10 @@ import { PmDataService } from '../../services/pm-data.service';
     AfDropdownComponent,
     AfBadgeComponent,
     AfSpinnerComponent,
+    AfEmptyStateComponent,
     AfButtonComponent,
     AfFormatLabelPipe,
     LucidePlus,
-    LucideSearch,
     LucideBug,
     LucideZap,
     LucideWrench,
@@ -74,43 +81,72 @@ export class TasksComponent {
 
     const projectId = this.projectId();
     if (projectId) {
-      tasks = tasks.filter(t => t.projectId === projectId);
+      tasks = tasks.filter((t) => t.projectId === projectId);
     }
 
     const query = this.searchQuery().toLowerCase();
     if (query) {
-      tasks = tasks.filter(t =>
-        t.title.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query) ||
-        t.tags.some(tag => tag.toLowerCase().includes(query))
+      tasks = tasks.filter(
+        (t) =>
+          t.title.toLowerCase().includes(query) ||
+          t.description.toLowerCase().includes(query) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(query)),
       );
     }
 
     const filter = this.filter();
     if (filter === 'active') {
-      tasks = tasks.filter(t => t.status !== 'DONE');
+      tasks = tasks.filter((t) => t.status !== 'DONE');
     } else if (filter === 'completed') {
-      tasks = tasks.filter(t => t.status === 'DONE');
+      tasks = tasks.filter((t) => t.status === 'DONE');
     }
 
     return tasks;
   });
 
+  /**
+   * Up to six typeahead matches for the current query, fed to the autocomplete.
+   * The autocomplete is external-filter only, so the matching/ordering happens here.
+   */
+  readonly searchSuggestions = computed<AfAutocompleteOption[]>(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    if (!query) return [];
+    const projectId = this.projectId();
+    return this.dataService
+      .tasks()
+      .filter((t) => !projectId || t.projectId === projectId)
+      .filter(
+        (t) =>
+          t.title.toLowerCase().includes(query) ||
+          t.tags.some((tag) => tag.toLowerCase().includes(query)) ||
+          (this.dataService.getMember(t.assigneeId)?.name.toLowerCase().includes(query) ?? false),
+      )
+      .slice(0, 6)
+      .map((t) => ({
+        id: t.id,
+        value: t.id,
+        label: t.title,
+        description: `${this.dataService.getMember(t.assigneeId)?.name ?? 'Unassigned'} · ${this.titleCase(t.status)}`,
+      }));
+  });
+
   readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredTasks().length / this.pageSize))
+    Math.max(1, Math.ceil(this.filteredTasks().length / this.pageSize)),
   );
 
   readonly pagedTasks = computed<AfDataRow[]>(() => {
     const tasks = this.filteredTasks();
     const start = (this.currentPage() - 1) * this.pageSize;
-    return tasks.slice(start, start + this.pageSize).map(t => ({
+    return tasks.slice(start, start + this.pageSize).map((t) => ({
       id: t.id,
       title: t.title,
       status: t.status,
       priority: t.priority,
       type: t.type,
       assignee: this.dataService.getMember(t.assigneeId)?.name ?? 'Unassigned',
-      dueDate: t.dueDate ? t.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—',
+      dueDate: t.dueDate
+        ? t.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        : '—',
     }));
   });
 
@@ -134,14 +170,21 @@ export class TasksComponent {
 
   getStatusVariant(status: string): 'success' | 'warning' | 'danger' | 'info' | 'default' {
     const map: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'default'> = {
-      DONE: 'success', IN_PROGRESS: 'info', IN_REVIEW: 'warning', BLOCKED: 'danger', TODO: 'default',
+      DONE: 'success',
+      IN_PROGRESS: 'info',
+      IN_REVIEW: 'warning',
+      BLOCKED: 'danger',
+      TODO: 'default',
     };
     return map[status] ?? 'default';
   }
 
   getPriorityVariant(priority: string): 'success' | 'warning' | 'danger' | 'info' | 'default' {
     const map: Record<string, 'success' | 'warning' | 'danger' | 'info' | 'default'> = {
-      LOW: 'default', MEDIUM: 'info', HIGH: 'warning', CRITICAL: 'danger',
+      LOW: 'default',
+      MEDIUM: 'info',
+      HIGH: 'warning',
+      CRITICAL: 'danger',
     };
     return map[priority] ?? 'default';
   }
@@ -167,7 +210,7 @@ export class TasksComponent {
   onRowAction(action: unknown, row: AfDataRow): void {
     if (action === 'delete') {
       const taskId = row['id'] as string;
-      const task = this.dataService.tasks().find(t => t.id === taskId);
+      const task = this.dataService.tasks().find((t) => t.id === taskId);
       if (!task) return;
 
       this.dataService.deleteTask(taskId);
@@ -189,5 +232,13 @@ export class TasksComponent {
   private simulateLoading(): void {
     this.loading.set(true);
     setTimeout(() => this.loading.set(false), 400);
+  }
+
+  /** Turns an enum-style token like `IN_PROGRESS` into a readable `In progress`. */
+  private titleCase(value: string): string {
+    return value
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/^./, (c) => c.toUpperCase());
   }
 }
