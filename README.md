@@ -15,7 +15,7 @@
 [![License: MIT](https://img.shields.io/npm/l/@neuravision/ng-construct?color=2ea44f)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-2ea44f)](CONTRIBUTING.md)
 
-[Install](#-install) · [Usage](#-usage) · [Components](#-components) · [Theming](#-theming) · [Design System](https://samyssmile.github.io/construct/) · [Contributing](CONTRIBUTING.md)
+[Live Demo](https://samyssmile.github.io/ng-construct/) · [Install](#-install) · [Usage](#-usage) · [Components](#-components) · [Theming](#-theming) · [Design System](https://samyssmile.github.io/construct/) · [Contributing](CONTRIBUTING.md)
 
 </div>
 
