@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **AfCard:** new `datum` input (usable as bare attribute, `<af-card datum>`) that renders
+  Construct's `ct-card--datum` corner register mark — the orange signature corner for
+  section-level cards. Closes the gap where consumers had to bypass `af-card` with plain
+  `ct-card` markup to get the datum look.
+
 ### Changed
 
 - **ci:** Deploy the demo app to GitHub Pages on every push to `main`

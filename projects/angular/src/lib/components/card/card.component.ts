@@ -2,6 +2,7 @@ import {
   Component,
   ChangeDetectionStrategy,
   ElementRef,
+  booleanAttribute,
   input,
   output,
   computed,
@@ -63,6 +64,13 @@ export class AfCardComponent {
   /** Makes the card interactive (clickable, keyboard-accessible). */
   interactive = input(false);
 
+  /**
+   * Renders Construct's datum corner register mark (`ct-card--datum`) — the
+   * orange corner curve that marks section-level cards with the design
+   * system's signature. Usable as a bare attribute: `<af-card datum>`.
+   */
+  datum = input(false, { transform: booleanAttribute });
+
   /** Shadow elevation level. */
   elevation = input<AfCardElevation | null>(null);
 
@@ -98,6 +106,9 @@ export class AfCardComponent {
     const classes = ['ct-card'];
     if (this.interactive()) {
       classes.push('ct-card--interactive');
+    }
+    if (this.datum()) {
+      classes.push('ct-card--datum');
     }
     return classes.join(' ');
   });
