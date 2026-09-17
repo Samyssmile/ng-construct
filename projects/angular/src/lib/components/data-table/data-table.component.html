@@ -1,5 +1,10 @@
 <div class="ct-data-table ct-data-table--simple">
-  <div class="ct-data-table__table">
+  <div
+    class="ct-data-table__table"
+    tabindex="0"
+    [attr.role]="scrollRegionRole()"
+    [attr.aria-label]="scrollRegionLabel()"
+  >
     <table [class]="tableClasses()">
       <thead>
         <tr>

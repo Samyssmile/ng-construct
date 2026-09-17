@@ -25,7 +25,12 @@ const TABLE_IMPORTS = [
 @Component({
   imports: TABLE_IMPORTS,
   template: `
-    <af-table [variant]="variant()" [compact]="compact()" [caption]="caption()">
+    <af-table
+      [variant]="variant()"
+      [compact]="compact()"
+      [caption]="caption()"
+      [ariaLabel]="ariaLabel()"
+    >
       <af-table-header>
         <af-table-row>
           <af-table-header-cell>Name</af-table-header-cell>
@@ -49,6 +54,7 @@ class TestHostComponent {
   variant = signal<'default' | 'striped' | 'bordered'>('default');
   compact = signal(false);
   caption = signal('');
+  ariaLabel = signal('');
 }
 
 @Component({
@@ -198,6 +204,51 @@ describe('AfTableComponent', () => {
     const caption = fixture.nativeElement.querySelector('caption');
     expect(caption).toBeTruthy();
     expect(caption.textContent?.trim()).toBe('Team members');
+  });
+
+  // ── Scrollable region ───────────────────────────────────────────────────
+
+  it('should make the scroll wrapper a keyboard tab stop', () => {
+    const wrap = fixture.nativeElement.querySelector('.ct-table-wrap');
+    expect(wrap.getAttribute('tabindex')).toBe('0');
+  });
+
+  it('should leave the wrapper unnamed and roleless without a caption or label', () => {
+    const wrap = fixture.nativeElement.querySelector('.ct-table-wrap');
+    expect(wrap.getAttribute('role')).toBeNull();
+    expect(wrap.getAttribute('aria-label')).toBeNull();
+    expect(wrap.getAttribute('aria-labelledby')).toBeNull();
+  });
+
+  it('should name the region from the caption', () => {
+    host.caption.set('Team members');
+    fixture.detectChanges();
+
+    const wrap = fixture.nativeElement.querySelector('.ct-table-wrap');
+    const caption = fixture.nativeElement.querySelector('caption');
+    expect(wrap.getAttribute('role')).toBe('region');
+    expect(caption.id).toBeTruthy();
+    expect(wrap.getAttribute('aria-labelledby')).toBe(caption.id);
+  });
+
+  it('should name the region from ariaLabel when there is no caption', () => {
+    host.ariaLabel.set('Team members');
+    fixture.detectChanges();
+
+    const wrap = fixture.nativeElement.querySelector('.ct-table-wrap');
+    expect(wrap.getAttribute('role')).toBe('region');
+    expect(wrap.getAttribute('aria-label')).toBe('Team members');
+  });
+
+  it('should prefer the caption over ariaLabel so the name is not duplicated', () => {
+    host.caption.set('Team members');
+    host.ariaLabel.set('Ignored');
+    fixture.detectChanges();
+
+    const wrap = fixture.nativeElement.querySelector('.ct-table-wrap');
+    const caption = fixture.nativeElement.querySelector('caption');
+    expect(wrap.getAttribute('aria-label')).toBeNull();
+    expect(wrap.getAttribute('aria-labelledby')).toBe(caption.id);
   });
 
   // ── Cell types ──────────────────────────────────────────────────────────

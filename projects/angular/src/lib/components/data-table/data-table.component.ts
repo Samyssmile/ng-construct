@@ -80,6 +80,17 @@ export class AfDataTableComponent {
   /** Row id key or accessor for stable selection. */
   rowId = input<string | ((row: AfDataRow) => string | number) | null>(null);
 
+  /**
+   * Accessible name for the scrollable region around the table. The table has a
+   * minimum width, so the region scrolls on narrow viewports and is a keyboard
+   * tab stop; a name tells a screen reader what that stop is.
+   */
+  ariaLabel = input('');
+
+  scrollRegionRole = computed(() => (this.ariaLabel() ? 'region' : null));
+
+  scrollRegionLabel = computed(() => this.ariaLabel() || null);
+
   rowClick = output<AfDataRow>();
   selectionChange = output<AfDataRow[]>();
   sortChange = output<AfSortState | null>();

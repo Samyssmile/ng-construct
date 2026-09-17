@@ -12,6 +12,10 @@ export type AfTableCellType = 'text' | 'numeric' | 'checkbox' | 'actions';
 /**
  * Lightweight table container wrapping the Construct Design System table styles.
  *
+ * The wrapper around the table scrolls when the table is wider than its
+ * container, so it is a keyboard tab stop. Give it a name through `caption` or
+ * `ariaLabel` so the stop is announced.
+ *
  * @example
  * <af-table variant="striped" caption="Team members">
  *   <af-table-header>
@@ -32,10 +36,16 @@ export type AfTableCellType = 'text' | 'numeric' | 'checkbox' | 'actions';
   selector: 'af-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="ct-table-wrap">
+    <div
+      class="ct-table-wrap"
+      tabindex="0"
+      [attr.role]="scrollRegionRole()"
+      [attr.aria-labelledby]="scrollRegionLabelledBy()"
+      [attr.aria-label]="scrollRegionLabel()"
+    >
       <table [class]="tableClasses()">
         @if (caption()) {
-          <caption>{{ caption() }}</caption>
+          <caption [id]="captionId">{{ caption() }}</caption>
         }
         <ng-content />
       </table>
@@ -50,6 +60,8 @@ export type AfTableCellType = 'text' | 'numeric' | 'checkbox' | 'actions';
   ],
 })
 export class AfTableComponent {
+  private static nextId = 0;
+
   /** Visual variant of the table. */
   variant = input<AfTableVariant>('default');
 
@@ -58,6 +70,25 @@ export class AfTableComponent {
 
   /** Accessible caption rendered as a `<caption>` element. */
   caption = input('');
+
+  /**
+   * Accessible name for the scrollable region around the table. Use it when the
+   * table carries no `caption`; a caption names the region on its own.
+   */
+  ariaLabel = input('');
+
+  readonly captionId = `af-table-caption-${AfTableComponent.nextId++}`;
+
+  /**
+   * The wrapper scrolls a table that is wider than its container, so it is a
+   * keyboard tab stop. A region announces what that stop is, but only once it
+   * has a name — an unnamed region tells a screen reader nothing.
+   */
+  scrollRegionRole = computed(() => (this.caption() || this.ariaLabel() ? 'region' : null));
+
+  scrollRegionLabelledBy = computed(() => (this.caption() ? this.captionId : null));
+
+  scrollRegionLabel = computed(() => (!this.caption() && this.ariaLabel() ? this.ariaLabel() : null));
 
   tableClasses = computed(() => {
     const classes = ['ct-table'];

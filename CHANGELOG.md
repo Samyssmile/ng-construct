@@ -5,6 +5,25 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.0] - 2026-09-17
+
+### Fixed
+
+- **AfTable / AfDataTable:** the scroll container around the table is a keyboard tab stop.
+  Both components render an element that scrolls when the table is wider than its container
+  (`ct-table-wrap`, and `ct-data-table__table`, whose table carries a 720px minimum width), but
+  neither was reachable by keyboard — a mouse user could scroll to the hidden columns and a
+  keyboard user could not. Needed since `@neuravision/construct` 2.3.1, where card, modal and
+  drawer slots stopped stretching around wide content, so these wrappers scroll for real.
+
+### Added
+
+- **AfTable:** new `ariaLabel` input naming the scrollable region for screen readers. A `caption`
+  names the region on its own — it is rendered with an id and referenced through `aria-labelledby`
+  — so `ariaLabel` is for tables without a visible caption. Without either, the wrapper stays a
+  plain tab stop and takes no `region` role, because an unnamed region announces nothing.
+- **AfDataTable:** new `ariaLabel` input, same contract.
+
 ## [0.11.3] - 2026-07-16
 
 ### Added
