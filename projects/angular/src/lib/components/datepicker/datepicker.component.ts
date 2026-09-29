@@ -79,6 +79,15 @@ const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Se
 
 const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
+/** Splits a flat cell list into grid rows of `size` cells (APG: gridcells must live in rows). */
+function chunk<T>(items: T[], size: number): T[][] {
+  const rows: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    rows.push(items.slice(i, i + size));
+  }
+  return rows;
+}
+
 /**
  * Datepicker component with calendar popup, month/year views, range selection,
  * min/max constraints, disabled dates, and full keyboard navigation.
@@ -143,6 +152,7 @@ const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
             [value]="formattedValue()"
             [disabled]="disabled()"
             [required]="required()"
+            role="combobox"
             [attr.aria-haspopup]="'dialog'"
             [attr.aria-expanded]="isOpen()"
             [attr.aria-controls]="popoverId()"
@@ -216,27 +226,35 @@ const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
                     </div>
                   }
                 </div>
-                @for (day of calendarDays(); track day.date.getTime()) {
-                  <button
-                    class="ct-datepicker__day"
-                    [attr.data-date]="getDateKey(day.date)"
-                    [attr.data-outside]="!day.isCurrentMonth || null"
-                    [attr.data-today]="day.isToday || null"
-                    [attr.data-unavailable]="day.isUnavailable || null"
-                    [attr.data-highlighted]="isDayHighlighted(day) || null"
-                    [attr.data-in-range]="day.isInRange || null"
-                    [attr.data-range-start]="day.isRangeStart || null"
-                    [attr.data-range-end]="day.isRangeEnd || null"
-                    [attr.aria-selected]="day.isSelected ? 'true' : null"
-                    [attr.aria-current]="day.isToday ? 'date' : null"
-                    [attr.aria-disabled]="day.isDisabled || day.isUnavailable ? 'true' : null"
-                    [disabled]="day.isDisabled || day.isUnavailable"
-                    [attr.tabindex]="getDayTabIndex(day)"
-                    role="gridcell"
-                    type="button"
-                    (click)="onDayClick(day)">
-                    {{ day.date.getDate() }}
-                  </button>
+                @for (week of calendarWeeks(); track week[0].date.getTime()) {
+                  <div class="ct-datepicker__row" role="row">
+                    @for (day of week; track day.date.getTime()) {
+                      <div
+                        class="ct-datepicker__cell"
+                        role="gridcell"
+                        [attr.aria-selected]="isDayMarkedSelected(day) ? 'true' : null">
+                        <button
+                          class="ct-datepicker__day"
+                          [attr.data-date]="getDateKey(day.date)"
+                          [attr.data-outside]="!day.isCurrentMonth || null"
+                          [attr.data-today]="day.isToday || null"
+                          [attr.data-unavailable]="day.isUnavailable || null"
+                          [attr.data-highlighted]="isDayHighlighted(day) || null"
+                          [attr.data-in-range]="day.isInRange || null"
+                          [attr.data-range-start]="day.isRangeStart || null"
+                          [attr.data-range-end]="day.isRangeEnd || null"
+                          [attr.aria-label]="getDayAriaLabel(day.date)"
+                          [attr.aria-current]="day.isToday ? 'date' : null"
+                          [attr.aria-disabled]="day.isDisabled || day.isUnavailable ? 'true' : null"
+                          [disabled]="day.isDisabled || day.isUnavailable"
+                          [attr.tabindex]="getDayTabIndex(day)"
+                          type="button"
+                          (click)="onDayClick(day)">
+                          {{ day.date.getDate() }}
+                        </button>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
               <div class="ct-datepicker__footer">
@@ -255,18 +273,26 @@ const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
                 role="grid"
                 aria-label="Select month"
                 (keydown)="onMonthGridKeydown($event)">
-                @for (m of monthItems(); track m.index) {
-                  <button
-                    class="ct-datepicker__month"
-                    [attr.aria-selected]="m.isSelected ? 'true' : null"
-                    [attr.data-highlighted]="isMonthHighlighted(m.index) || null"
-                    [disabled]="m.isDisabled"
-                    [attr.tabindex]="getMonthTabIndex(m.index)"
-                    role="gridcell"
-                    type="button"
-                    (click)="selectMonth(m.index)">
-                    {{ m.shortLabel }}
-                  </button>
+                @for (row of monthRows(); track row[0].index) {
+                  <div class="ct-datepicker__row" role="row">
+                    @for (m of row; track m.index) {
+                      <div
+                        class="ct-datepicker__cell"
+                        role="gridcell"
+                        [attr.aria-selected]="m.isSelected ? 'true' : null">
+                        <button
+                          class="ct-datepicker__month"
+                          [attr.aria-label]="m.label + ' ' + currentYear()"
+                          [attr.data-highlighted]="isMonthHighlighted(m.index) || null"
+                          [disabled]="m.isDisabled"
+                          [attr.tabindex]="getMonthTabIndex(m.index)"
+                          type="button"
+                          (click)="selectMonth(m.index)">
+                          {{ m.shortLabel }}
+                        </button>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
             }
@@ -276,18 +302,25 @@ const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
                 role="grid"
                 aria-label="Select year"
                 (keydown)="onYearGridKeydown($event)">
-                @for (y of yearItems(); track y.value) {
-                  <button
-                    class="ct-datepicker__year"
-                    [attr.aria-selected]="y.isSelected ? 'true' : null"
-                    [attr.data-highlighted]="isYearHighlighted(y.value) || null"
-                    [disabled]="y.isDisabled"
-                    [attr.tabindex]="getYearTabIndex(y.value)"
-                    role="gridcell"
-                    type="button"
-                    (click)="selectYear(y.value)">
-                    {{ y.value }}
-                  </button>
+                @for (row of yearRows(); track row[0].value) {
+                  <div class="ct-datepicker__row" role="row">
+                    @for (y of row; track y.value) {
+                      <div
+                        class="ct-datepicker__cell"
+                        role="gridcell"
+                        [attr.aria-selected]="y.isSelected ? 'true' : null">
+                        <button
+                          class="ct-datepicker__year"
+                          [attr.data-highlighted]="isYearHighlighted(y.value) || null"
+                          [disabled]="y.isDisabled"
+                          [attr.tabindex]="getYearTabIndex(y.value)"
+                          type="button"
+                          (click)="selectYear(y.value)">
+                          {{ y.value }}
+                        </button>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
             }
@@ -441,6 +474,9 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   rangeStart = signal<Date | null>(null);
   rangeEnd = signal<Date | null>(null);
   rangeSelecting = signal(false);
+
+  /** Committed range to restore when a half-picked range (start only) is dismissed. */
+  private rangeBeforeSelection: AfDateRange | null = null;
 
   currentMonth = signal(new Date().getMonth());
   currentYear = signal(new Date().getFullYear());
@@ -614,6 +650,15 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     });
   });
 
+  /** Day cells grouped into the grid's six week rows. */
+  calendarWeeks = computed(() => chunk(this.calendarDays(), 7));
+
+  /** Month cells grouped into the grid's four rows of three. */
+  monthRows = computed(() => chunk(this.monthItems(), 3));
+
+  /** Year cells grouped into the grid's four rows of three. */
+  yearRows = computed(() => chunk(this.yearItems(), 3));
+
   // ── Open / Close ─────────────────────────────────────────────
 
   toggle(): void {
@@ -624,11 +669,12 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     }
   }
 
-  /** Opens the calendar popover */
+  /** Opens the calendar popover on the selected date (range mode: the range start), else today */
   open(): void {
     if (this.disabled() || this.isOpen()) return;
-    const selected = this.selectedDate();
-    const focusDate = selected ?? new Date();
+    const anchor =
+      this.mode() === 'range' ? (this.rangeStart() ?? this.rangeEnd()) : this.selectedDate();
+    const focusDate = anchor ?? new Date();
     this.currentMonth.set(focusDate.getMonth());
     this.currentYear.set(focusDate.getFullYear());
     this.focusedDate.set(focusDate);
@@ -639,9 +685,16 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     queueMicrotask(() => this.focusDayButton(focusDate));
   }
 
-  /** Closes the calendar popover */
+  /**
+   * Closes the calendar popover. Dismissing it while a range is only half picked (start chosen,
+   * end not) restores the last committed range, so the input never shows a range that was not
+   * applied.
+   */
   close(returnFocus = false): void {
     if (!this.isOpen()) return;
+    if (this.rangeSelecting()) {
+      this.abandonRangeSelection();
+    }
     this.isOpen.set(false);
     this.onTouched();
     if (returnFocus) {
@@ -673,6 +726,7 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   /** Handles range date selection (two-click: start then end) */
   selectRangeDate(date: Date): void {
     if (!this.rangeSelecting()) {
+      this.rangeBeforeSelection = { start: this.rangeStart(), end: this.rangeEnd() };
       this.rangeStart.set(date);
       this.rangeEnd.set(null);
       this.rangeSelecting.set(true);
@@ -686,6 +740,7 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
       this.rangeStart.set(start);
       this.rangeEnd.set(end);
       this.rangeSelecting.set(false);
+      this.rangeBeforeSelection = null;
       this.emitRangeValue(start, end);
       this.rangeChange.emit({ start, end });
       this.close(true);
@@ -715,6 +770,7 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
       this.rangeStart.set(null);
       this.rangeEnd.set(null);
       this.rangeSelecting.set(false);
+      this.rangeBeforeSelection = null;
       this.emitRangeValue(null, null);
     } else {
       this.selectedDate.set(null);
@@ -789,6 +845,16 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   // ── Day Helpers for Template ─────────────────────────────────
+
+  /** Whether a day's gridcell carries `aria-selected`: the picked date, or a range's start/end */
+  isDayMarkedSelected(day: CalendarDay): boolean {
+    return day.isSelected || day.isRangeStart || day.isRangeEnd;
+  }
+
+  /** Full date for screen readers, e.g. "15 September 2026" (the button text is the day only) */
+  getDayAriaLabel(date: Date): string {
+    return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
+  }
 
   /** Returns true if the given day matches the keyboard-focused date */
   isDayHighlighted(day: CalendarDay): boolean {
@@ -1071,6 +1137,7 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   private writeRangeValue(value: unknown): void {
+    this.rangeBeforeSelection = null;
     if (!value || typeof value !== 'object') {
       this.rangeStart.set(null);
       this.rangeEnd.set(null);
@@ -1095,7 +1162,14 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     } else {
       this.onChange(date);
     }
-    this.onValidatorChange();
+  }
+
+  /** Drops a half-picked range and restores the range committed before the selection began. */
+  private abandonRangeSelection(): void {
+    this.rangeStart.set(this.rangeBeforeSelection?.start ?? null);
+    this.rangeEnd.set(this.rangeBeforeSelection?.end ?? null);
+    this.rangeSelecting.set(false);
+    this.rangeBeforeSelection = null;
   }
 
   private emitRangeValue(start: Date | null, end: Date | null): void {
@@ -1107,7 +1181,6 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     } else {
       this.onChange({ start, end });
     }
-    this.onValidatorChange();
   }
 
   // ── Private: Validation ──────────────────────────────────────

@@ -5,6 +5,30 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.1] - 2026-09-29
+
+### Fixed
+
+- **AfDatepicker:** passes axe-core again in every view. The day, month and year grids now
+  follow Construct's APG date-picker markup: gridcells sit inside `role="row"` elements
+  (`ct-datepicker__row` / `ct-datepicker__cell`), `aria-selected` moves from the button to its
+  gridcell, and the buttons keep their native button role. Previously every gridcell was a direct
+  child of the grid (`aria-required-parent` / `aria-required-children`, critical). Day buttons
+  carry the full date as accessible name ("15 September 2026"), month buttons month and year.
+- **AfDatepicker:** the trigger input has `role="combobox"`. `aria-expanded` is not allowed on
+  a plain text input (`aria-allowed-attr`, critical); on a combobox it is, together with the
+  existing `aria-haspopup="dialog"` and `aria-controls`.
+- **AfDatepicker (range mode):** dismissing the calendar after picking only a start day (Escape,
+  outside click, re-clicking the input) restores the last committed range. Before, the input kept
+  showing the half-picked "1 Sep 2026 – ..." although nothing was applied, so the control
+  misstated the active filter.
+- **AfDatepicker (range mode):** opening the calendar shows and focuses the committed range start
+  instead of always jumping to today.
+- **AfDatepicker:** a pick fires `valueChanges` once instead of twice. The component called
+  `onValidatorChange()` right after `onChange()`; the second `updateValueAndValidity()` re-emitted
+  the same value (consumers reacting to `valueChanges` ran twice). The value change already
+  re-runs the component's validator, so the call was redundant.
+
 ## [0.12.0] - 2026-09-17
 
 ### Fixed

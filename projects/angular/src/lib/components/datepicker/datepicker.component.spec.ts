@@ -7,6 +7,7 @@ import {
   AfDatepickerValueFormat,
   AfDateRange,
 } from './datepicker.component';
+import { checkA11y } from '../../testing/axe-helper';
 
 // ── Single-mode test host ────────────────────────────────────
 
@@ -413,7 +414,9 @@ describe('AfDatepickerComponent', () => {
 
       openDatepicker();
       const selectedBtn = getDayByDate(today.getFullYear(), today.getMonth(), 15);
-      expect(selectedBtn!.getAttribute('aria-selected')).toBe('true');
+      // aria-selected lives on the gridcell wrapper; the button keeps its native role
+      expect(selectedBtn!.closest('[role="gridcell"]')!.getAttribute('aria-selected')).toBe('true');
+      expect(selectedBtn!.hasAttribute('aria-selected')).toBe(false);
     });
 
     it('should mark today with aria-current="date"', () => {
@@ -815,6 +818,85 @@ describe('AfDatepickerComponent', () => {
       expect(getInput().value).toContain('Jan 10, 2025');
       expect(getInput().value).toContain('Jan 20, 2025');
     });
+
+    it('should mark range start and end gridcells with aria-selected', async () => {
+      host.value.set({ start: new Date(2025, 0, 10), end: new Date(2025, 0, 20) });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      openDatepicker();
+      const cellOf = (day: number) =>
+        getDayByDate(2025, 0, day)!.closest('[role="gridcell"]')!.getAttribute('aria-selected');
+      expect(cellOf(10)).toBe('true');
+      expect(cellOf(20)).toBe('true');
+      expect(cellOf(15)).toBeNull(); // in range: visual fill only
+    });
+
+    it('should open on the month of the committed range start', async () => {
+      host.value.set({ start: new Date(2025, 0, 10), end: new Date(2025, 1, 5) });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      openDatepicker();
+      expect(getTitleButton().textContent).toContain('January 2025');
+      expect(getDayByDate(2025, 0, 10)!.getAttribute('tabindex')).toBe('0');
+    });
+
+    describe('dismissing a half-picked range', () => {
+      async function commitRange(): Promise<void> {
+        host.value.set({ start: new Date(2025, 0, 10), end: new Date(2025, 0, 20) });
+        fixture.detectChanges();
+        await fixture.whenStable();
+        fixture.detectChanges();
+      }
+
+      function pickStartOnly(): void {
+        openDatepicker();
+        getDayByDate(2025, 0, 25)!.click();
+        fixture.detectChanges();
+        expect(getInput().value).toContain('...');
+      }
+
+      it('should restore the committed range on Escape', async () => {
+        await commitRange();
+        pickStartOnly();
+        sendKey(getGrid()!, 'Escape');
+
+        expect(getDatepickerRoot().getAttribute('data-state')).toBe('closed');
+        expect(getInput().value).toBe('Jan 10, 2025 – Jan 20, 2025');
+        expect(host.lastRangeChange()).toBeNull();
+      });
+
+      it('should restore the committed range on an outside click', async () => {
+        await commitRange();
+        pickStartOnly();
+        document.body.click();
+        fixture.detectChanges();
+
+        expect(getDatepickerRoot().getAttribute('data-state')).toBe('closed');
+        expect(getInput().value).toBe('Jan 10, 2025 – Jan 20, 2025');
+      });
+
+      it('should return to empty when nothing was committed before', () => {
+        openDatepicker();
+        const today = new Date();
+        getDayByDate(today.getFullYear(), today.getMonth(), 10)!.click();
+        fixture.detectChanges();
+        sendKey(getGrid()!, 'Escape');
+
+        expect(getInput().value).toBe('');
+        expect(getClearBtn()).toBeNull();
+      });
+
+      it('should start a fresh selection on reopen', async () => {
+        await commitRange();
+        pickStartOnly();
+        sendKey(getGrid()!, 'Escape');
+        openDatepicker();
+
+        getDayByDate(2025, 0, 12)!.click();
+        fixture.detectChanges();
+        expect(getDatepickerRoot().getAttribute('data-state')).toBe('open'); // first click only
+      });
+    });
   });
 
   // ── ISO Value Format ──────────────────────────────────────
@@ -1089,10 +1171,55 @@ describe('AfDatepickerComponent', () => {
       expect(getGrid()!.getAttribute('role')).toBe('grid');
     });
 
-    it('should have role="gridcell" on day buttons', () => {
+    it('should wrap each day button in a gridcell that sits inside a row', () => {
       openDatepicker();
-      const buttons = getDayButtons();
-      expect(buttons[0].getAttribute('role')).toBe('gridcell');
+      const button = getDayButtons()[0];
+      const cell = button.parentElement!;
+      expect(button.hasAttribute('role')).toBe(false); // keeps its native button role
+      expect(cell.getAttribute('role')).toBe('gridcell');
+      expect(cell.parentElement!.getAttribute('role')).toBe('row');
+    });
+
+    it('should render one header row plus six week rows of seven cells', () => {
+      openDatepicker();
+      const rows = Array.from(getGrid()!.querySelectorAll(':scope > [role="row"]'));
+      expect(rows.length).toBe(7);
+      rows.slice(1).forEach((row) => {
+        expect(row.querySelectorAll(':scope > [role="gridcell"]').length).toBe(7);
+      });
+      // no gridcell may be a direct child of the grid
+      expect(getGrid()!.querySelectorAll(':scope > [role="gridcell"]').length).toBe(0);
+    });
+
+    it('should label day buttons with the full date', () => {
+      openDatepicker();
+      getNextButton().click();
+      fixture.detectChanges();
+      const title = getTitleButton().textContent!.trim(); // e.g. "October 2026"
+      const [monthName, year] = title.split(' ');
+      const firstOfMonth = getDayButtons().find((b) => !b.hasAttribute('data-outside'))!;
+      expect(firstOfMonth.getAttribute('aria-label')).toBe(`1 ${monthName} ${year}`);
+    });
+
+    it('should group month and year cells into rows of three', () => {
+      openDatepicker();
+      getTitleButton().click();
+      fixture.detectChanges();
+      const monthRows = getMonthGrid()!.querySelectorAll(':scope > [role="row"]');
+      expect(monthRows.length).toBe(4);
+      expect(monthRows[0].querySelectorAll('[role="gridcell"] .ct-datepicker__month').length).toBe(3);
+      expect(getMonthButtons()[0].getAttribute('aria-label')).toMatch(/^January \d{4}$/);
+
+      getTitleButton().click();
+      fixture.detectChanges();
+      const yearRows = getYearGrid()!.querySelectorAll(':scope > [role="row"]');
+      expect(yearRows.length).toBe(4);
+      expect(yearRows[3].querySelectorAll('[role="gridcell"]').length).toBe(3);
+    });
+
+    it('should expose the trigger input as a combobox (aria-expanded is valid on it)', () => {
+      expect(getInput().getAttribute('role')).toBe('combobox');
+      expect(getInput().getAttribute('aria-expanded')).toBe('false');
     });
 
     it('should have role="columnheader" on weekday headers', () => {
@@ -1176,6 +1303,34 @@ describe('AfDatepickerComponent (Reactive Forms)', () => {
     expect(host.control.value).toBeTruthy();
   });
 
+  it('should emit valueChanges exactly once per selection', () => {
+    const emissions: unknown[] = [];
+    host.control.valueChanges.subscribe((value) => emissions.push(value));
+    fixture.nativeElement.querySelector('input').click();
+    fixture.detectChanges();
+    const today = new Date();
+    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-15`;
+    fixture.nativeElement.querySelector(`.ct-datepicker__day[data-date="${key}"]`).click();
+    fixture.detectChanges();
+
+    expect(emissions.length).toBe(1);
+  });
+
+  it('should re-validate the control when a date is picked in the calendar', () => {
+    host.control.setValidators(Validators.required);
+    host.control.updateValueAndValidity();
+    expect(host.control.valid).toBe(false);
+
+    fixture.nativeElement.querySelector('input').click();
+    fixture.detectChanges();
+    const today = new Date();
+    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-15`;
+    fixture.nativeElement.querySelector(`.ct-datepicker__day[data-date="${key}"]`).click();
+    fixture.detectChanges();
+
+    expect(host.control.valid).toBe(true);
+  });
+
   it('should disable component via form control', () => {
     host.control.disable();
     fixture.detectChanges();
@@ -1221,5 +1376,57 @@ describe('AfDatepickerComponent (Reactive Forms)', () => {
 
     host.control.setValue(new Date(2025, 0, 15));
     expect(host.control.valid).toBe(true);
+  });
+});
+
+// ── Accessibility (axe-core) ─────────────────────────────────
+
+describe('AfDatepickerComponent accessibility (axe-core)', () => {
+  let fixture: ComponentFixture<TestHostComponent>;
+  let host: TestHostComponent;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TestHostComponent],
+    }).compileComponents();
+    fixture = TestBed.createComponent(TestHostComponent);
+    host = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  function open(): void {
+    fixture.nativeElement.querySelector('input').click();
+    fixture.detectChanges();
+  }
+
+  function clickTitle(): void {
+    fixture.nativeElement.querySelector('.ct-datepicker__title').click();
+    fixture.detectChanges();
+  }
+
+  it('should have no violations when closed', async () => {
+    await checkA11y(fixture.nativeElement);
+  });
+
+  it('should have no violations with the day grid open', async () => {
+    open();
+    await checkA11y(fixture.nativeElement);
+  });
+
+  it('should have no violations in the month and year views', async () => {
+    open();
+    clickTitle();
+    await checkA11y(fixture.nativeElement);
+    clickTitle();
+    await checkA11y(fixture.nativeElement);
+  });
+
+  it('should have no violations with a committed range open', async () => {
+    host.mode.set('range');
+    host.value.set({ start: new Date(2025, 0, 10), end: new Date(2025, 0, 20) });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    open();
+    await checkA11y(fixture.nativeElement);
   });
 });
