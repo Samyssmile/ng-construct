@@ -9,9 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **AfDatepicker:** new `locale` input (BCP-47, e.g. `'en-GB'`, `'de-DE'`; pass Angular's
+  `LOCALE_ID` to match `DatePipe`). Month and weekday names, the calendar title, the month-grid
+  labels and each day's accessible name now come from `Intl.DateTimeFormat` instead of hard-coded
+  English tables, so a picker in an en-GB app reads "Sept" like the rest of the page and a German
+  one "März". Unset — or an invalid tag such as `en_GB` — means `'en-US'`, which reproduces the
+  previous names exactly (covered by a regression spec). Scope: names only; the week still starts
+  on Monday and the component's own strings ("Today", "Previous month", …) stay English.
+- **AfDatepicker:** `dateFormat` understands `MMMM` (full month name) next to `MMM`.
 - **AfLineChart:** new `tickLabels` input — short x-axis text per category, aligned 1:1 with
   `categories` (e.g. `14:00` while the category reads `29 Sept 2026, 14:00`). Only the axis uses
   it; the data table and point tooltips keep the full category.
+
+### Changed
+
+- **AfDatepicker:** a day's accessible name follows the locale's long date format. For the
+  default en-US that is "September 15, 2026" (0.12.1 read "15 September 2026").
+- **AfDatepicker:** `weekdayLabels` / `weekdayFullLabels` are now read-only signals derived from
+  `locale` (they were plain arrays).
 
 ### Fixed
 

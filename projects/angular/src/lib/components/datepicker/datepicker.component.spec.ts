@@ -19,6 +19,7 @@ import { checkA11y } from '../../testing/axe-helper';
       [placeholder]="placeholder()"
       [disabled]="disabled()"
       [dateFormat]="dateFormat()"
+      [locale]="locale()"
       [min]="min()"
       [max]="max()"
       [disabledDates]="disabledDates()"
@@ -39,6 +40,7 @@ class TestHostComponent {
   placeholder = signal('Pick a date');
   disabled = signal(false);
   dateFormat = signal('MMM dd, yyyy');
+  locale = signal<string | undefined>(undefined);
   min = signal<Date | string | null>(null);
   max = signal<Date | string | null>(null);
   disabledDates = signal<Date[]>([]);
@@ -1198,7 +1200,8 @@ describe('AfDatepickerComponent', () => {
       const title = getTitleButton().textContent!.trim(); // e.g. "October 2026"
       const [monthName, year] = title.split(' ');
       const firstOfMonth = getDayButtons().find((b) => !b.hasAttribute('data-outside'))!;
-      expect(firstOfMonth.getAttribute('aria-label')).toBe(`1 ${monthName} ${year}`);
+      // en-US by default: "October 1, 2026"
+      expect(firstOfMonth.getAttribute('aria-label')).toBe(`${monthName} 1, ${year}`);
     });
 
     it('should group month and year cells into rows of three', () => {
@@ -1232,6 +1235,60 @@ describe('AfDatepickerComponent', () => {
       openDatepicker();
       const headers = fixture.nativeElement.querySelectorAll('.ct-datepicker__weekday');
       expect(headers[0].getAttribute('aria-label')).toBe('Monday');
+    });
+  });
+
+  // ── Locale ────────────────────────────────────────────────
+
+  describe('locale', () => {
+    beforeEach(() => {
+      host.locale.set('de-DE');
+      fixture.detectChanges();
+    });
+
+    it('should render German weekday columns, Monday first', () => {
+      openDatepicker();
+      const headers = Array.from<HTMLElement>(
+        fixture.nativeElement.querySelectorAll('.ct-datepicker__weekday'),
+      );
+      expect(headers.map((h) => h.textContent!.trim())).toEqual([
+        'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So',
+      ]);
+      expect(headers[0].getAttribute('aria-label')).toBe('Montag');
+    });
+
+    it('should title and label the calendar in German', async () => {
+      host.value.set(new Date(2026, 2, 15));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      openDatepicker();
+
+      expect(getTitleButton().textContent!.trim()).toBe('März 2026');
+      expect(getGrid()!.getAttribute('aria-label')).toBe('März 2026');
+      expect(getDayByDate(2026, 2, 15)!.getAttribute('aria-label')).toBe('15. März 2026');
+
+      getTitleButton().click();
+      fixture.detectChanges();
+      expect(getMonthButtons()[2].getAttribute('aria-label')).toBe('März 2026');
+    });
+
+    it('should format the input with localized month names, incl. the MMMM token', async () => {
+      host.dateFormat.set('d. MMMM yyyy');
+      host.value.set(new Date(2026, 2, 5));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(getInput().value).toBe('5. März 2026');
+    });
+
+    it('should keep the English defaults for an invalid locale tag', () => {
+      host.locale.set('en_GB');
+      fixture.detectChanges();
+      openDatepicker();
+      const first = fixture.nativeElement.querySelector('.ct-datepicker__weekday');
+      expect(first.textContent.trim()).toBe('Mo');
+      expect(first.getAttribute('aria-label')).toBe('Monday');
     });
   });
 

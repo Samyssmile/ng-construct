@@ -18,6 +18,7 @@ import {
   AbstractControl,
   ValidationErrors,
 } from '@angular/forms';
+import { resolveCalendarNames } from './datepicker-locale';
 
 /** Supported calendar views */
 export type AfDatepickerView = 'days' | 'months' | 'years';
@@ -50,6 +51,8 @@ interface MonthItem {
   index: number;
   label: string;
   shortLabel: string;
+  /** Month and year for assistive technology, e.g. "January 2026". */
+  ariaLabel: string;
   isSelected: boolean;
   isDisabled: boolean;
 }
@@ -59,25 +62,6 @@ interface YearItem {
   isSelected: boolean;
   isDisabled: boolean;
 }
-
-const MONTH_NAMES = [
-  'January',
-  'February',
-  'March',
-  'April',
-  'May',
-  'June',
-  'July',
-  'August',
-  'September',
-  'October',
-  'November',
-  'December',
-];
-
-const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-const WEEKDAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
 /** Splits a flat cell list into grid rows of `size` cells (APG: gridcells must live in rows). */
 function chunk<T>(items: T[], size: number): T[][] {
@@ -220,8 +204,8 @@ function chunk<T>(items: T[], size: number): T[][] {
                 [attr.aria-label]="gridAriaLabel()"
                 (keydown)="onDayGridKeydown($event)">
                 <div class="ct-datepicker__row" role="row">
-                  @for (day of weekdayLabels; track $index) {
-                    <div class="ct-datepicker__weekday" role="columnheader" [attr.aria-label]="weekdayFullLabels[$index]">
+                  @for (day of weekdayLabels(); track $index) {
+                    <div class="ct-datepicker__weekday" role="columnheader" [attr.aria-label]="weekdayFullLabels()[$index]">
                       {{ day }}
                     </div>
                   }
@@ -282,7 +266,7 @@ function chunk<T>(items: T[], size: number): T[][] {
                         [attr.aria-selected]="m.isSelected ? 'true' : null">
                         <button
                           class="ct-datepicker__month"
-                          [attr.aria-label]="m.label + ' ' + currentYear()"
+                          [attr.aria-label]="m.ariaLabel"
                           [attr.data-highlighted]="isMonthHighlighted(m.index) || null"
                           [disabled]="m.isDisabled"
                           [attr.tabindex]="getMonthTabIndex(m.index)"
@@ -413,8 +397,22 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   /** Whether the datepicker is disabled */
   disabled = model(false);
 
-  /** Display format for the selected date */
+  /**
+   * Display format for the selected date. Tokens: `yyyy`, `MMMM` (full month name), `MMM`
+   * (abbreviated month name), `MM`, `dd`, `d`; month names follow {@link locale}.
+   */
   dateFormat = input('MMM dd, yyyy');
+
+  /**
+   * BCP-47 locale for month and weekday names, the calendar title and each day's accessible
+   * name (e.g. `'en-GB'`, `'de-DE'`; pass Angular's `LOCALE_ID` to match `DatePipe`). Unset — or
+   * an invalid tag — means `'en-US'`, the original English names. Unlike the charts' `locale`,
+   * it does not fall back to the runtime default.
+   *
+   * Scope: names only. The week still starts on Monday, and the component's own strings
+   * ("Today", "Previous month", …) stay English.
+   */
+  locale = input<string>();
 
   /** Unique ID for the input element */
   inputId = input(`af-datepicker-${AfDatepickerComponent.nextId++}`);
@@ -463,10 +461,16 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   inputRef = viewChild<ElementRef<HTMLInputElement>>('inputEl');
   popoverRef = viewChild<ElementRef<HTMLDivElement>>('popoverEl');
 
-  // ── Constants ────────────────────────────────────────────────
+  // ── Locale ───────────────────────────────────────────────────
 
-  weekdayLabels = WEEKDAY_LABELS;
-  weekdayFullLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  /** Month/weekday names and date formats for {@link locale}, resolved once per locale. */
+  private readonly names = computed(() => resolveCalendarNames(this.locale()));
+
+  /** Two-letter weekday column labels, Monday first */
+  weekdayLabels = computed(() => this.names().weekdays);
+
+  /** Full weekday names, Monday first (column header accessible names) */
+  weekdayFullLabels = computed(() => this.names().weekdaysLong);
 
   // ── Internal State ───────────────────────────────────────────
 
@@ -514,7 +518,7 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   headerTitle = computed(() => {
     switch (this.currentView()) {
       case 'days':
-        return `${MONTH_NAMES[this.currentMonth()]} ${this.currentYear()}`;
+        return this.names().formatMonthYear(new Date(this.currentYear(), this.currentMonth(), 1));
       case 'months':
         return `${this.currentYear()}`;
       case 'years':
@@ -556,7 +560,7 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   });
 
   gridAriaLabel = computed(
-    () => `${MONTH_NAMES[this.currentMonth()]} ${this.currentYear()}`
+    () => this.names().formatMonthYear(new Date(this.currentYear(), this.currentMonth(), 1))
   );
 
   hasClearableValue = computed(() => {
@@ -621,13 +625,15 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     const selected = this.selectedDate();
     const min = this.parsedMin();
     const max = this.parsedMax();
+    const names = this.names();
 
     return Array.from({ length: 12 }, (_, i) => {
       const isDisabled = this.isMonthDisabled(year, i, min, max);
       return {
         index: i,
-        label: MONTH_NAMES[i],
-        shortLabel: MONTH_SHORT[i],
+        label: names.months[i],
+        shortLabel: names.monthsShort[i],
+        ariaLabel: names.formatMonthYear(new Date(year, i, 1)),
         isSelected: selected ? selected.getMonth() === i && selected.getFullYear() === year : false,
         isDisabled,
       };
@@ -851,9 +857,9 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
     return day.isSelected || day.isRangeStart || day.isRangeEnd;
   }
 
-  /** Full date for screen readers, e.g. "15 September 2026" (the button text is the day only) */
+  /** Full date for screen readers in {@link locale}, e.g. "September 15, 2026" (the button shows the day only) */
   getDayAriaLabel(date: Date): string {
-    return `${date.getDate()} ${MONTH_NAMES[date.getMonth()]} ${date.getFullYear()}`;
+    return this.names().formatFullDate(date);
   }
 
   /** Returns true if the given day matches the keyboard-focused date */
@@ -1443,13 +1449,15 @@ export class AfDatepickerComponent implements ControlValueAccessor, Validator {
   }
 
   private formatDate(date: Date): string {
+    const names = this.names();
     const tokens: Record<string, string> = {
       yyyy: String(date.getFullYear()),
-      MMM: MONTH_SHORT[date.getMonth()],
+      MMMM: names.months[date.getMonth()],
+      MMM: names.monthsShort[date.getMonth()],
       MM: String(date.getMonth() + 1).padStart(2, '0'),
       dd: String(date.getDate()).padStart(2, '0'),
       d: String(date.getDate()),
     };
-    return this.dateFormat().replace(/yyyy|MMM|MM|dd|d/g, (token) => tokens[token] ?? token);
+    return this.dateFormat().replace(/yyyy|MMMM|MMM|MM|dd|d/g, (token) => tokens[token] ?? token);
   }
 }
