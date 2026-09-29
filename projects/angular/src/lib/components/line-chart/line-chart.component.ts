@@ -14,8 +14,10 @@ import {
   ChartPoint,
   buildAreaPath,
   buildLinePath,
+  estimateTextWidth,
   formatNumber,
   niceScale,
+  pickTickIndices,
   roundTo,
   scaleLinear,
 } from '../../utils/chart-geometry';
@@ -41,6 +43,10 @@ let nextLineChartUid = 0;
 const VIEW_WIDTH = 640;
 const MARGIN = { top: 12, right: 16, bottom: 28, left: 48 };
 const MAX_X_LABELS = 12;
+/** Tick label size in SVG user units: `--font-size-xs` (0.75rem) at the 16px root size. */
+const TICK_FONT_SIZE = 12;
+/** Minimum free space between two neighbouring x-axis labels, in SVG user units. */
+const TICK_LABEL_GAP = 8;
 
 /**
  * Accessible line / area chart for time-series and trend data.
@@ -54,6 +60,13 @@ const MAX_X_LABELS = 12;
  *   ariaLabel="Revenue, last 30 days"
  *   [categories]="days"
  *   [series]="[{ name: 'Revenue', values: revenue }]" />
+ *
+ * @example Short axis labels, full labels in the data table and tooltips
+ * <af-line-chart
+ *   ariaLabel="Processed pages per hour"
+ *   [categories]="['29 Sept 2026, 14:00', '29 Sept 2026, 15:00']"
+ *   [tickLabels]="['14:00', '15:00']"
+ *   [series]="[{ name: 'Pages', values: [12, 30] }]" />
  *
  * @example Multi-series area chart
  * <af-line-chart
@@ -186,8 +199,18 @@ export class AfLineChartComponent {
 
   /** Accessible chart label (required by the WAI-ARIA `img` role). */
   ariaLabel = input.required<string>();
-  /** X-axis category labels (e.g. dates). Series values align 1:1 with these. */
+  /**
+   * Category labels (e.g. dates). Series values align 1:1 with these; they name the rows of
+   * the data table and the point tooltips. The x-axis shows them too unless
+   * {@link tickLabels} provides shorter text. Axis labels are thinned so they never overlap.
+   */
   categories = input.required<string[]>();
+  /**
+   * Optional short x-axis text per category, aligned 1:1 with {@link categories} (e.g. `14:00`
+   * while the category reads `29 Sept 2026, 14:00`). Only the axis uses it; the data table and
+   * tooltips keep the full category. Missing entries fall back to the category.
+   */
+  tickLabels = input<string[] | null>(null);
   /** One or more data series sharing the category axis. */
   series = input.required<AfChartSeries[]>();
   /** Fill the area beneath each line. */
@@ -267,10 +290,19 @@ export class AfLineChartComponent {
       label: this.format(value),
     }));
 
-    const labelStep = Math.max(1, Math.ceil(categories.length / MAX_X_LABELS));
-    const xLabels = categories
-      .map((label, i) => ({ label, x: roundTo(xAt(i), 2), i }))
-      .filter(({ i }) => i % labelStep === 0 || i === categories.length - 1);
+    const tickLabels = this.tickLabels();
+    const tickTexts = categories.map((category, i) => tickLabels?.[i] ?? category);
+    const widestTick = tickTexts.reduce(
+      (widest, text) => Math.max(widest, estimateTextWidth(text, TICK_FONT_SIZE)),
+      0,
+    );
+    const tickSpacing = categories.length > 1 ? plotWidth / (categories.length - 1) : plotWidth;
+    const xLabels = pickTickIndices(
+      categories.length,
+      tickSpacing,
+      widestTick + TICK_LABEL_GAP,
+      MAX_X_LABELS,
+    ).map((i) => ({ label: tickTexts[i], x: roundTo(xAt(i), 2) }));
 
     const seriesGeom: SeriesGeom[] = series.map((s, si) => {
       const segments: PlotPoint[][] = [];

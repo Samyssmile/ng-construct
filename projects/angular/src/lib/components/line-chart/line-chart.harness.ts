@@ -66,6 +66,13 @@ export class AfLineChartHarness {
       .map((t) => t.textContent?.trim() ?? '');
   }
 
+  /** Returns the rendered x-axis (category) tick labels, left to right. */
+  getXTickLabels(): string[] {
+    return Array.from(this.hostEl.querySelectorAll('.ct-chart__tick-label'))
+      .filter((t) => t.getAttribute('text-anchor') === 'middle')
+      .map((t) => t.textContent?.trim() ?? '');
+  }
+
   /** Returns whether the empty-state message is shown. */
   isEmpty(): boolean {
     return this.hostEl.querySelector('.ct-chart__empty') !== null;

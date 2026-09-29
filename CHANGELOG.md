@@ -5,6 +5,24 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2026-09-29
+
+### Added
+
+- **AfLineChart:** new `tickLabels` input — short x-axis text per category, aligned 1:1 with
+  `categories` (e.g. `14:00` while the category reads `29 Sept 2026, 14:00`). Only the axis uses
+  it; the data table and point tooltips keep the full category.
+
+### Fixed
+
+- **AfLineChart:** x-axis labels no longer overlap. Labels were thinned to at most 12 regardless
+  of their length, so dates like `2026-09-01` collided from about 30 categories on, and the last
+  label was always forced in, even right next to the previous one. The chart now estimates each
+  label's width (SSR-safe, no DOM measurement) and labels every n-th category so neighbours keep a
+  gap; the last category stays labelled and replaces the previous pick if they would collide.
+  The thinning lives in `chart-geometry` (`pickTickIndices`, `estimateTextWidth`) for the other
+  charts to adopt.
+
 ## [0.12.1] - 2026-09-29
 
 ### Fixed

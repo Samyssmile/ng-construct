@@ -33,6 +33,56 @@ export function roundTo(value: number, decimals = 6): number {
   return Math.round(value * factor) / factor;
 }
 
+/**
+ * Average glyph advance of the UI font as a fraction of the font size. Digits and lower-case
+ * letters of the body font sit around 0.5–0.6em; the upper bound keeps the estimate on the
+ * safe side (labels spaced slightly too wide, never overlapping).
+ */
+const AVERAGE_GLYPH_RATIO = 0.6;
+
+/**
+ * Estimated rendered width of `text` at `fontSize`, in the same units as `fontSize` (SVG user
+ * units for chart labels). An SSR-safe stand-in for text measurement, which needs a DOM.
+ */
+export function estimateTextWidth(text: string, fontSize: number): number {
+  return Array.from(text).length * fontSize * AVERAGE_GLYPH_RATIO;
+}
+
+/**
+ * Chooses which of `count` evenly spaced category ticks carry a label so that no two labels
+ * overlap: every `step`-th tick is labelled, where `step` is large enough for `labelWidth` to
+ * fit between two labelled ticks and for at most `maxLabels` labels to appear. The first tick
+ * is always labelled; the last one too (the end of a series is usually "now"), replacing the
+ * previous pick if the two would collide. If not even two labels fit, only the first remains.
+ *
+ * @param count      number of categories on the axis
+ * @param spacing    distance between two adjacent category ticks
+ * @param labelWidth width one label needs, including the gap to its neighbour
+ * @param maxLabels  upper bound on labels regardless of space
+ * @returns ascending category indices to label
+ */
+export function pickTickIndices(
+  count: number,
+  spacing: number,
+  labelWidth: number,
+  maxLabels: number,
+): number[] {
+  if (count <= 0) return [];
+  if (count === 1) return [0];
+  const byCount = Math.ceil(count / Math.max(1, maxLabels));
+  const bySpace = spacing > 0 ? Math.ceil(labelWidth / spacing) : count;
+  const step = Math.max(1, byCount, bySpace);
+
+  const indices: number[] = [];
+  for (let i = 0; i < count; i += step) indices.push(i);
+
+  const last = count - 1;
+  if (indices[indices.length - 1] !== last && indices.length > 1) {
+    indices[indices.length - 1] = last;
+  }
+  return indices;
+}
+
 /** Round a candidate axis range/step to a visually "nice" 1/2/5×10ⁿ value. */
 function niceNum(range: number, round: boolean): number {
   const exponent = Math.floor(Math.log10(range));
