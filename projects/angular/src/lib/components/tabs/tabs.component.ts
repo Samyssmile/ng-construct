@@ -1,4 +1,4 @@
-import { Component, contentChildren, viewChildren, ElementRef, effect, input, output, model, ChangeDetectionStrategy } from '@angular/core';
+import { Component, contentChildren, viewChildren, ElementRef, computed, effect, input, model, ChangeDetectionStrategy } from '@angular/core';
 
 export interface AfTab {
   id: string;
@@ -17,8 +17,8 @@ export interface AfTab {
       <div
         class="ct-tabs__panel"
         role="tabpanel"
-        [attr.id]="'panel-' + id()"
-        [attr.aria-labelledby]="'tab-' + id()">
+        [attr.id]="'panel-' + resolvedId()"
+        [attr.aria-labelledby]="'tab-' + resolvedId()">
         <ng-content></ng-content>
       </div>
     }
@@ -26,15 +26,23 @@ export interface AfTab {
 })
 export class AfTabPanelComponent {
   private static nextId = 0;
+  private readonly fallbackId = `af-tab-${AfTabPanelComponent.nextId++}`;
 
   id = model('');
   label = input('');
   isActive = model(false);
   disabled = input(false);
 
+  /** The panel's effective id: the bound `id`, or a stable generated one when none is given. */
+  readonly resolvedId = computed(() => this.id() || this.fallbackId);
+
+  /**
+   * Writes the generated id into `id` when none was bound and returns the effective id.
+   * Kept for backwards compatibility; read {@link resolvedId} instead.
+   */
   ensureId(): string {
     if (!this.id()) {
-      this.id.set(`af-tab-${AfTabPanelComponent.nextId++}`);
+      this.id.set(this.fallbackId);
     }
     return this.id();
   }
@@ -59,7 +67,7 @@ export class AfTabPanelComponent {
   template: `
     <div class="ct-tabs">
       <div class="ct-tabs__list" role="tablist">
-        @for (tab of tabs; track tab.id) {
+        @for (tab of tabs(); track tab.id) {
           <button
             #tabButton
             class="ct-tabs__trigger"
@@ -87,14 +95,23 @@ export class AfTabPanelComponent {
   `]
 })
 export class AfTabsComponent {
-  /** Array of tabs (generated from projected tab panels) */
-  tabs: AfTab[] = [];
-
   /** Currently active tab ID (two-way bound) */
   activeTab = model('');
 
   panels = contentChildren(AfTabPanelComponent);
   tabButtons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
+
+  /**
+   * Tab triggers derived from the projected panels. A signal, so a panel whose `label` or
+   * `disabled` binding changes (e.g. a live count like "Members (3)") re-renders its trigger.
+   */
+  readonly tabs = computed<AfTab[]>(() =>
+    this.panels().map(panel => ({
+      id: panel.resolvedId(),
+      label: panel.label() || panel.resolvedId(),
+      disabled: panel.disabled()
+    }))
+  );
 
   private panelsEffect = effect(() => {
     this.syncTabsFromPanels();
@@ -108,7 +125,7 @@ export class AfTabsComponent {
   }
 
   onKeydown(event: KeyboardEvent, currentId: string): void {
-    const enabledTabs = this.tabs.filter(tab => !tab.disabled);
+    const enabledTabs = this.tabs().filter(tab => !tab.disabled);
     if (enabledTabs.length === 0) return;
 
     const currentIndex = enabledTabs.findIndex(tab => tab.id === currentId);
@@ -151,15 +168,10 @@ export class AfTabsComponent {
   }
 
   private syncTabsFromPanels(): void {
-    const panels = this.panels();
-    this.tabs = panels.map(panel => ({
-      id: panel.ensureId(),
-      label: panel.label() || panel.id(),
-      disabled: panel.disabled()
-    }));
+    const tabs = this.tabs();
 
-    if (!this.activeTab() || !this.tabs.some(tab => tab.id === this.activeTab() && !tab.disabled)) {
-      const firstEnabled = this.tabs.find(tab => !tab.disabled);
+    if (!this.activeTab() || !tabs.some(tab => tab.id === this.activeTab() && !tab.disabled)) {
+      const firstEnabled = tabs.find(tab => !tab.disabled);
       if (firstEnabled) {
         this.activeTab.set(firstEnabled.id);
       }
@@ -172,7 +184,7 @@ export class AfTabsComponent {
     const panels = this.panels();
     if (!panels.length) return;
     panels.forEach(panel => {
-      panel.isActive.set(panel.id() === this.activeTab());
+      panel.isActive.set(panel.resolvedId() === this.activeTab());
     });
   }
 

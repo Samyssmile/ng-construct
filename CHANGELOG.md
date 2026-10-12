@@ -5,7 +5,7 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.13.0] - 2026-09-29
+## [0.13.0] - 2026-10-12
 
 ### Added
 
@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   default en-US that is "September 15, 2026" (0.12.1 read "15 September 2026").
 - **AfDatepicker:** `weekdayLabels` / `weekdayFullLabels` are now read-only signals derived from
   `locale` (they were plain arrays).
+- **AfTabs:** `tabs` is now a read-only signal derived from the projected panels (it was a plain
+  array written by an effect). **AfTabPanel** gains `resolvedId`, the bound `id` or a stable
+  generated one; `ensureId()` still works but is no longer needed.
 
 ### Fixed
 
@@ -37,6 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   gap; the last category stays labelled and replaces the previous pick if they would collide.
   The thinning lives in `chart-geometry` (`pickTickIndices`, `estimateTextWidth`) for the other
   charts to adopt.
+- **AfTabs:** a trigger now updates when its panel's `label` or `disabled` binding changes. The
+  OnPush tab bar rendered a plain array, so a live label such as `Members (3)` stayed stale until
+  something else re-rendered the tabs (e.g. switching tabs). Covered by a regression spec, along
+  with id wiring, keyboard navigation and axe.
 
 ## [0.12.1] - 2026-09-29
 
