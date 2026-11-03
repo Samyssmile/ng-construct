@@ -5,6 +5,17 @@ All notable changes to `@neuravision/ng-construct` will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] - 2026-11-03
+
+### Fixed
+
+- **AfNavTabs:** the tab of the current route shows its active indicator again, in both the
+  `default` and `pill` variant. The active link now carries `data-state="active"`, which
+  Construct's tabs stylesheet already styles, instead of a component-local copy of those rules
+  keyed to `ct-tabs__trigger--active`. `aria-current="page"` is set through Router's
+  `ariaCurrentWhenActive`. New spec covers navigation in both variants, query parameters and
+  fragments on the current route, disabled tabs and axe.
+
 ## [0.13.0] - 2026-10-12
 
 ### Added
