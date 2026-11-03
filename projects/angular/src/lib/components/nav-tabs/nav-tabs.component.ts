@@ -58,8 +58,9 @@ export type AfNavTabsSize = 'sm' | 'md' | 'lg';
                 class="ct-tabs__trigger"
                 [routerLink]="tab.routerLink"
                 routerLinkActive="ct-tabs__trigger--active"
+                ariaCurrentWhenActive="page"
                 #rla="routerLinkActive"
-                [attr.aria-current]="rla.isActive ? 'page' : null"
+                [attr.data-state]="rla.isActive ? 'active' : null"
                 [attr.id]="'nav-tab-' + tab.id">
                 {{ tab.label }}
               </a>
@@ -82,23 +83,6 @@ export type AfNavTabsSize = 'sm' | 'md' | 'lg';
 
     li {
       display: contents;
-    }
-
-    .ct-tabs__trigger--active {
-      color: var(--color-text-primary);
-    }
-
-    .ct-tabs__trigger--active::after {
-      background: var(--ct-tabs-indicator-color, var(--color-brand-primary));
-    }
-
-    .ct-tabs--pill .ct-tabs__trigger--active {
-      background: var(--color-bg-elevated);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .ct-tabs--pill .ct-tabs__trigger--active::after {
-      display: none;
     }
 
     .ct-tabs__trigger[aria-disabled='true'] {
